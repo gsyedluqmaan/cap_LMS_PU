@@ -56,11 +56,23 @@ export async function POST(request: NextRequest) {
       isVerified: user.isVerified,
     };
 
-    return NextResponse.json({
+    // Create response
+    const response = NextResponse.json({
       message: 'Login successful',
       user: userResponse,
       token,
     }, { status: 200 });
+
+    // Set HTTP-only cookie for server-side middleware
+    response.cookies.set('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      path: '/',
+    });
+
+    return response;
 
   } catch (error: any) {
     console.error('Login error:', error);

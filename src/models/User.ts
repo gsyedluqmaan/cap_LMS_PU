@@ -67,8 +67,7 @@ const UserSchema: Schema = new Schema(
   }
 );
 
-// Create indexes
-UserSchema.index({ email: 1 });
+// Create indexes (email index already created by unique: true)
 UserSchema.index({ studentId: 1 }, { sparse: true });
 UserSchema.index({ employeeId: 1 }, { sparse: true });
 

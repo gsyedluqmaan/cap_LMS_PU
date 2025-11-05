@@ -33,8 +33,14 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear token and redirect to login on unauthorized
       if (typeof window !== 'undefined') {
+        console.log('401 error detected, clearing auth and redirecting to login');
         localStorage.removeItem('authToken');
-        window.location.href = '/login';
+        // Use a small delay to prevent immediate redirect loops
+        setTimeout(() => {
+          if (!window.location.pathname.startsWith('/login')) {
+            window.location.href = '/login';
+          }
+        }, 100);
       }
     }
     return Promise.reject(error);
