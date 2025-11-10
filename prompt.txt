@@ -1,0 +1,21 @@
+I want u to first go through this repo completely and understand about this repo u can understand about this in the ./PROJECT_OVERVIEW.md once u have a clear understand on the project i want u to develop these new features to me (these features and their key features are already added in the md file) 
+*  Develop a comprehensive TimeTable mgmt system 
+*  Backend
+   * First create 2 new models rooms, timetable model and when designing this make sure that the model is fully optimized in sense of storage and also latency and design this wisely
+   *  Once u are done with the model file create a new CRUD route for both timetable and rooms 
+   *  Permission: if role == admin can anything CRUD 
+   *  if teacher then map through all the classes which that teacher teaches and combine all the classes timetable and merge it into a single view and show it 
+   *  if student the simply show his class timetable.
+*  Front-End 
+   *  Create 2 new route 
+   *   Rooms and timetable 
+      *  Rooms 
+         * Allow user to configure everything about the room like what is the seating capacity, where is the room located, has a projector, room type lab or normal class everything 
+         * Visibility: Admin can CRUD
+         * Students and teachers can  only Read nothing else 
+      * TimeTable 
+         * When an admin enters the page
+            * first give a dropdowns in the top right side of the screen on to choose a class and accoridng to the choosen class show the timetbale of that class 
+          * When students or teacher enter the page then just rendered teh data recieved from the backed as teacher timetable will be aggregated and give based on their roll
+          * Update the class model to have multple array of subjects instead of only one single subject and when assigning the teachers in the class first assign the take which subject is taught by that teacher and also their is a field called room now u have ot split it into 2 and link it with the rooms to allocate a room one for theory and another form lab sessions
+          * Now as u have all the data of a class number of students teachers and etc give a button in the timetable page to generate a timetable and when user clicks on this then to all the classes which are availabel throughout the database a timetable should be generate without any clashes because same rooms willl be allocated to same classes and also same teacher will be assigned so be very carefull when developping this feature u have to make sure that their will be no colisions or ambiguity in the whole timetable everything has to be perfect.

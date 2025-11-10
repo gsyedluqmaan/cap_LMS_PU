@@ -7,6 +7,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 ## Current Features
 
 ### 1. Authentication & Authorization
+
 - **JWT-based authentication** with HTTP-only cookies
 - **Dual token storage** (localStorage + cookies) for enhanced security
 - **Role-based access control** (Admin, Teacher, Student)
@@ -14,6 +15,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 - Protected routes with middleware validation
 
 ### 2. User Management
+
 - Create and manage user accounts
 - Role assignment (Admin, Teacher, Student)
 - User profile management
@@ -21,6 +23,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 - Department-based user organization
 
 ### 3. Class Section Management
+
 - Create and manage class sections
 - Assign teachers to classes
 - Enroll students in classes
@@ -30,6 +33,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 - Unique class codes for each section
 
 ### 4. Online Classes
+
 - View assigned classes (role-based)
 - Search and filter classes by:
   - Class name
@@ -41,6 +45,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 - Class enrollment tracking
 
 ### 5. Academic Calendar
+
 - Create and manage calendar events
 - Event types (Exam, Holiday, Meeting, Deadline, Class, Other)
 - Date and time scheduling
@@ -48,6 +53,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 - Department-specific events
 
 ### 6. Dashboard
+
 - Role-specific dashboards for Admin, Teacher, and Student
 - Quick access to key features
 - Navigation sidebar with role-based menu items
@@ -56,6 +62,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 ## Technical Stack
 
 ### Frontend
+
 - **Next.js 14+** with App Router
 - **React 18** for UI components
 - **TypeScript** for type safety
@@ -63,12 +70,14 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 - **Lucide React** for icons
 
 ### Backend
+
 - **Next.js API Routes** for RESTful endpoints
 - **MongoDB** with Mongoose ODM
 - **JWT** for authentication
 - **bcrypt** for password hashing
 
 ### Key Libraries
+
 - **Axios** for HTTP requests with interceptors
 - **date-fns** for date manipulation
 - **React Hooks** for state management
@@ -76,6 +85,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 ## Architecture Highlights
 
 ### Security Features
+
 1. **Server-side middleware** for route protection
 2. **HTTP-only cookies** to prevent XSS attacks
 3. **Token verification** on both client and server
@@ -83,6 +93,7 @@ Campus LMS is a comprehensive Learning Management System designed for educationa
 5. **Role-based authorization** at API level
 
 ### Performance Optimizations
+
 1. **Request deduplication** to prevent concurrent API calls
 2. **Circuit breaker pattern** for failed API requests
 3. **Pagination** for large data sets
@@ -135,6 +146,7 @@ cap_LMS_PU/
 ## Database Models
 
 ### User Model
+
 - Basic info: name, email, password
 - Role: student, teacher, admin
 - IDs: studentId, employeeId
@@ -142,6 +154,7 @@ cap_LMS_PU/
 - Timestamps
 
 ### Class Section Model
+
 - Class details: name, code, description
 - Subject and department
 - Academic year and semester
@@ -151,6 +164,7 @@ cap_LMS_PU/
 - Active status
 
 ### Calendar Event Model
+
 - Event details: title, description
 - Date and time
 - Event type
@@ -158,23 +172,45 @@ cap_LMS_PU/
 - Department association
 - Creator tracking
 
+### Room Model ✨ (New)
+
+- Room identification: number, name, type
+- Location: building, floor
+- Capacity and facilities
+- Equipment tracking (projector, computers, AC, WiFi)
+- Optimized indexes for queries
+
+### Timetable Model ✨ (New)
+
+- Class section reference
+- Academic year and semester
+- Time slots with day, time, subject, teacher, room
+- Conflict detection built-in
+- Auto-generation support
+- Role-based access control
+
 ## Upcoming Features
 
 ### 1. Timetable Management System 🚀
+
 A comprehensive timetable management system to organize and visualize class schedules.
 
 #### Planned Features:
+
 - **Weekly Timetable View**
+
   - Grid-based layout showing all classes by day and time
   - Color-coded by department/subject
   - Drag-and-drop interface for scheduling
 
 - **Room Management**
+
   - Assign classrooms to sessions
   - Track room availability
   - Room capacity management
 
 - **Multi-view Options**
+
   - Student view: Personal timetable
   - Teacher view: Teaching schedule
   - Admin view: Overall institution schedule
@@ -188,6 +224,7 @@ A comprehensive timetable management system to organize and visualize class sche
 ## Development Roadmap
 
 ### Phase 1: Foundation ✅
+
 - [x] User authentication and authorization
 - [x] Role-based access control
 - [x] Basic dashboard structure
@@ -195,20 +232,25 @@ A comprehensive timetable management system to organize and visualize class sche
 - [x] Class section management
 
 ### Phase 2: Core Features ✅
+
 - [x] Online classes module
 - [x] Academic calendar
 - [x] Class scheduling basics
 - [x] Bug fixes and optimizations
 
-### Phase 3: Timetable Management 🔄 (In Planning)
-- [ ] Design timetable database schema
-- [ ] Create timetable UI components
-- [ ] Implement conflict detection
-- [ ] Room management system
-- [ ] Multi-view timetable displays
+### Phase 3: Timetable Management ✅ (Backend Complete)
+
+- [x] Design timetable database schema
+- [x] Create Room and Timetable models with optimized indexing
+- [x] Implement conflict detection for teachers and rooms
+- [x] Room management system with CRUD API
+- [x] Multi-view timetable displays (role-based API)
+- [x] Auto-generation algorithm for timetables
+- [ ] Create timetable UI components (frontend pending)
 - [ ] Export and integration features
 
 ### Phase 4: Attendance Management 🔄 (In Planning)
+
 - [ ] Design attendance database schema
 - [ ] Create attendance marking interface
 - [ ] Implement QR code system
@@ -217,6 +259,7 @@ A comprehensive timetable management system to organize and visualize class sche
 - [ ] Notification system
 
 ### Phase 5: Advanced Features 📋 (Future)
+
 - [ ] Assignment and homework management
 - [ ] Grade management system
 - [ ] Communication portal (messaging)
@@ -229,11 +272,13 @@ A comprehensive timetable management system to organize and visualize class sche
 ## Installation & Setup
 
 ### Prerequisites
+
 - Node.js 18+ and npm
 - MongoDB database
 - Environment variables configured
 
 ### Environment Variables
+
 ```env
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
@@ -241,6 +286,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ### Installation Steps
+
 ```bash
 # Clone the repository
 git clone https://github.com/gsyedluqmaan/cap_LMS_PU.git
@@ -264,11 +310,13 @@ npm start
 ## API Documentation
 
 ### Authentication Endpoints
+
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/logout` - User logout
 
 ### User Endpoints
+
 - `GET /api/users` - Get all users
 - `GET /api/users/:id` - Get user by ID
 - `POST /api/users/create` - Create new user
@@ -278,6 +326,7 @@ npm start
 - `GET /api/users/teachers` - Get all teachers
 
 ### Class Section Endpoints
+
 - `GET /api/class-sections` - Get all class sections
 - `GET /api/class-sections/:id` - Get class section by ID
 - `GET /api/class-sections/user/:userId` - Get user's class sections
@@ -286,15 +335,34 @@ npm start
 - `DELETE /api/class-sections/:id` - Delete class section
 
 ### Calendar Endpoints
+
 - `GET /api/calendar/events` - Get all events
 - `GET /api/calendar/events/:id` - Get event by ID
 - `POST /api/calendar/events` - Create event
 - `PUT /api/calendar/events/:id` - Update event
 - `DELETE /api/calendar/events/:id` - Delete event
 
+### Room Endpoints ✨ (New)
+
+- `GET /api/rooms` - Get all rooms (with filters and pagination)
+- `GET /api/rooms/:id` - Get room by ID
+- `POST /api/rooms` - Create room (admin only)
+- `PUT /api/rooms/:id` - Update room (admin only)
+- `DELETE /api/rooms/:id` - Delete room (admin only)
+
+### Timetable Endpoints ✨ (New)
+
+- `GET /api/timetables` - Get timetables (role-based view)
+- `GET /api/timetables/:id` - Get timetable by ID
+- `POST /api/timetables` - Create timetable (admin only)
+- `PUT /api/timetables/:id` - Update timetable (admin only)
+- `DELETE /api/timetables/:id` - Delete timetable (admin only)
+- `POST /api/timetables/generate` - Auto-generate timetables (admin only)
+
 ## Contributing
 
 ### Development Guidelines
+
 1. Follow TypeScript best practices
 2. Use ESLint and Prettier for code formatting
 3. Write meaningful commit messages
@@ -302,6 +370,7 @@ npm start
 5. Test thoroughly before submitting PRs
 
 ### Code Style
+
 - Use functional components with hooks
 - Implement proper error handling
 - Add TypeScript types for all functions
@@ -311,12 +380,14 @@ npm start
 ## Testing
 
 ### Current Testing Strategy
+
 - Manual testing for all features
 - Browser console monitoring
 - API debugging widget
 - Error logging and monitoring
 
 ### Planned Testing Improvements
+
 - Unit tests with Jest
 - Integration tests with React Testing Library
 - E2E tests with Playwright
@@ -326,6 +397,7 @@ npm start
 ## Known Issues & Limitations
 
 ### Current Limitations
+
 1. No real-time collaboration features yet
 2. Limited mobile responsiveness (in progress)
 3. No file upload/management system
@@ -333,6 +405,7 @@ npm start
 5. No advanced analytics dashboard
 
 ### Issues Being Addressed
+
 - ✅ Infinite API loop (Fixed)
 - ✅ Authentication token synchronization (Fixed)
 - ✅ Role-based access issues (Fixed)
@@ -342,6 +415,7 @@ npm start
 ## Security Considerations
 
 ### Implemented Security Measures
+
 1. JWT authentication with HTTP-only cookies
 2. Password hashing with bcrypt
 3. CSRF protection via same-site cookies
@@ -351,6 +425,7 @@ npm start
 7. XSS protection through React
 
 ### Planned Security Enhancements
+
 - Rate limiting for API endpoints
 - Two-factor authentication (2FA)
 - Password strength requirements
@@ -361,11 +436,13 @@ npm start
 ## Performance Metrics
 
 ### Current Performance
+
 - Initial page load: ~2-3 seconds
 - API response time: ~100-300ms
 - Client-side navigation: <100ms
 
 ### Optimization Goals
+
 - Reduce initial bundle size
 - Implement server-side caching
 - Optimize database queries
@@ -375,11 +452,13 @@ npm start
 ## Support & Documentation
 
 ### Resources
+
 - GitHub Repository: https://github.com/gsyedluqmaan/cap_LMS_PU
 - Issue Tracker: GitHub Issues
 - Documentation: This file and inline code comments
 
 ### Contact
+
 For questions or support, please open an issue on GitHub.
 
 ## License

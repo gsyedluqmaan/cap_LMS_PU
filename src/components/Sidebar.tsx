@@ -13,6 +13,8 @@ import {
   X,
   LogOut,
   UserCheck,
+  Building2,
+  CalendarDays,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -70,6 +72,22 @@ const Sidebar = ({ user, onLogout }: SidebarProps) => {
     href: "/dashboard/calendar",
     icon: Calendar,
     active: isActive("/dashboard/calendar"),
+  });
+
+  // Add Rooms for all users
+  menuItems.push({
+    name: "Rooms",
+    href: "/dashboard/rooms",
+    icon: Building2,
+    active: isActive("/dashboard/rooms"),
+  });
+
+  // Add Timetable for all users
+  menuItems.push({
+    name: "Timetable",
+    href: "/dashboard/timetable",
+    icon: CalendarDays,
+    active: isActive("/dashboard/timetable"),
   });
 
   // Admin-only menu items
