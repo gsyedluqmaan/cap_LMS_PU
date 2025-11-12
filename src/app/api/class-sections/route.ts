@@ -56,13 +56,13 @@ export async function GET(request: NextRequest) {
 
     if (department) filter.department = department;
     if (academicYear) filter.academicYear = academicYear;
-    if (teacherId) filter.teachers = { $in: [teacherId] };
+    if (teacherId) filter['subjects.teacher'] = teacherId;
     if (studentId) filter.students = { $in: [studentId] };
     if (isActive !== null) filter.isActive = isActive === 'true';
 
     // Role-based filtering
     if (user.role === 'teacher') {
-      filter.teachers = { $in: [user.userId] };
+      filter['subjects.teacher'] = user.userId;
     } else if (user.role === 'student') {
       filter.students = { $in: [user.userId] };
     }
@@ -71,9 +71,11 @@ export async function GET(request: NextRequest) {
     
     const [classes, totalCount] = await Promise.all([
       ClassSection.find(filter)
-        .populate('teachers', 'name email employeeId')
+        .populate('subjects.teacher', 'name email employeeId')
         .populate('students', 'name email studentId')
         .populate('createdBy', 'name email')
+        .populate('theoryRoom', 'roomNumber roomName building')
+        .populate('labRoom', 'roomNumber roomName building')
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 }),
@@ -117,14 +119,15 @@ export async function POST(request: NextRequest) {
       className,
       classCode,
       description,
-      subject,
+      subjects = [],
       department,
       semester,
       academicYear,
-      teachers = [],
       students = [],
       maxStudents,
       schedule = [],
+      theoryRoom,
+      labRoom,
       isActive = true
     } = body;
 
@@ -132,6 +135,14 @@ export async function POST(request: NextRequest) {
     if (!className || !department || !academicYear || !maxStudents) {
       return NextResponse.json(
         { error: 'Class name, department, academic year, and max students are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate subjects array
+    if (subjects.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one subject with teacher assignment is required' },
         { status: 400 }
       );
     }
@@ -148,12 +159,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate teachers exist and have teacher role
-    if (teachers.length > 0) {
+    if (subjects.length > 0) {
+      const teacherIds = subjects.map((s: any) => s.teacher);
       const teacherUsers = await User.find({ 
-        _id: { $in: teachers }, 
+        _id: { $in: teacherIds }, 
         role: 'teacher' 
       });
-      if (teacherUsers.length !== teachers.length) {
+      if (teacherUsers.length !== teacherIds.length) {
         return NextResponse.json(
           { error: 'Some selected teachers are invalid' },
           { status: 400 }
@@ -187,14 +199,15 @@ export async function POST(request: NextRequest) {
       className,
       classCode: classCode || undefined, // Let the pre-save hook generate if empty
       description,
-      subject,
+      subjects,
       department,
       semester,
       academicYear,
-      teachers,
       students,
       maxStudents,
       schedule,
+      theoryRoom: theoryRoom || undefined,
+      labRoom: labRoom || undefined,
       isActive,
       createdBy: user.userId
     });
@@ -203,9 +216,11 @@ export async function POST(request: NextRequest) {
 
     // Populate the created class section
     const populatedClass = await ClassSection.findById(classSection._id)
-      .populate('teachers', 'name email employeeId')
+      .populate('subjects.teacher', 'name email employeeId')
       .populate('students', 'name email studentId')
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .populate('theoryRoom', 'roomNumber roomName building')
+      .populate('labRoom', 'roomNumber roomName building');
 
     return NextResponse.json(populatedClass, { status: 201 });
   } catch (error: any) {

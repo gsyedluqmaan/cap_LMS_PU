@@ -23,7 +23,7 @@ const verifyToken = (request: NextRequest): DecodedToken | null => {
   }
 };
 
-// POST /api/class-sections/[id]/teachers - Add teachers to class section
+// POST /api/class-sections/[id]/teachers - Add subject with teacher to class section
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -41,16 +41,17 @@ export async function POST(
       return NextResponse.json({ error: 'Class section not found' }, { status: 404 });
     }
 
-    const { teacherIds } = await request.json();
+    const { subjects } = await request.json();
 
-    if (!Array.isArray(teacherIds) || teacherIds.length === 0) {
+    if (!Array.isArray(subjects) || subjects.length === 0) {
       return NextResponse.json(
-        { error: 'Teacher IDs array is required' },
+        { error: 'Subjects array is required with format: [{subject, teacher, hoursPerWeek, sessionType}]' },
         { status: 400 }
       );
     }
 
     // Validate teachers exist and have teacher role
+    const teacherIds = subjects.map((s: any) => s.teacher);
     const teachers = await User.find({ 
       _id: { $in: teacherIds }, 
       role: 'teacher' 
@@ -63,27 +64,36 @@ export async function POST(
       );
     }
 
-    // Add new teachers (avoid duplicates)
-    const newTeachers = teacherIds.filter(id => !classSection.teachers.includes(id));
-    classSection.teachers.push(...newTeachers);
+    // Add new subjects (avoid duplicates based on subject name and teacher)
+    for (const newSubject of subjects) {
+      const exists = classSection.subjects.some(
+        (s: any) => s.subject === newSubject.subject && s.teacher.toString() === newSubject.teacher
+      );
+      if (!exists) {
+        classSection.subjects.push(newSubject);
+      }
+    }
+    
     await classSection.save();
 
     const updatedClass = await ClassSection.findById(params.id)
-      .populate('teachers', 'name email employeeId')
+      .populate('subjects.teacher', 'name email employeeId')
       .populate('students', 'name email studentId')
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .populate('theoryRoom', 'roomNumber roomName building')
+      .populate('labRoom', 'roomNumber roomName building');
 
     return NextResponse.json(updatedClass);
   } catch (error: any) {
-    console.error('Add teachers error:', error);
+    console.error('Add subjects error:', error);
     return NextResponse.json(
-      { error: 'Failed to add teachers to class section' },
+      { error: 'Failed to add subjects to class section' },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/class-sections/[id]/teachers - Remove teachers from class section
+// DELETE /api/class-sections/[id]/teachers - Remove subjects by subject name or teacher from class section
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -101,32 +111,36 @@ export async function DELETE(
       return NextResponse.json({ error: 'Class section not found' }, { status: 404 });
     }
 
-    const { teacherIds } = await request.json();
+    const { subjectNames, teacherIds } = await request.json();
 
-    if (!Array.isArray(teacherIds) || teacherIds.length === 0) {
+    if ((!subjectNames || subjectNames.length === 0) && (!teacherIds || teacherIds.length === 0)) {
       return NextResponse.json(
-        { error: 'Teacher IDs array is required' },
+        { error: 'Either subjectNames or teacherIds array is required' },
         { status: 400 }
       );
     }
 
-    // Remove teachers
-    classSection.teachers = classSection.teachers.filter(
-      (teacherId: any) => !teacherIds.includes(teacherId.toString())
-    );
+    // Remove subjects by name or teacher
+    classSection.subjects = classSection.subjects.filter((s: any) => {
+      const matchesSubject = subjectNames && subjectNames.includes(s.subject);
+      const matchesTeacher = teacherIds && teacherIds.includes(s.teacher.toString());
+      return !(matchesSubject || matchesTeacher);
+    });
 
     await classSection.save();
 
     const updatedClass = await ClassSection.findById(params.id)
-      .populate('teachers', 'name email employeeId')
+      .populate('subjects.teacher', 'name email employeeId')
       .populate('students', 'name email studentId')
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .populate('theoryRoom', 'roomNumber roomName building')
+      .populate('labRoom', 'roomNumber roomName building');
 
     return NextResponse.json(updatedClass);
   } catch (error: any) {
-    console.error('Remove teachers error:', error);
+    console.error('Remove subjects error:', error);
     return NextResponse.json(
-      { error: 'Failed to remove teachers from class section' },
+      { error: 'Failed to remove subjects from class section' },
       { status: 500 }
     );
   }
