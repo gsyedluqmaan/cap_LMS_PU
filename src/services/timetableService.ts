@@ -132,25 +132,26 @@ class TimetableService {
   // Get timetables (role-based)
   async getTimetables(params: GetTimetablesParams = {}): Promise<any> {
     const response = await api.get('/timetables', { params });
-    return response.data.data;
+    // API returns { data: [...] } so we access response.data directly
+    return response.data;
   }
 
   // Get timetable by ID
   async getTimetableById(id: string): Promise<Timetable> {
     const response = await api.get(`/timetables/${id}`);
-    return response.data.data;
+    return response.data.data || response.data;
   }
 
   // Create timetable (admin only)
   async createTimetable(timetableData: CreateTimetableData): Promise<Timetable> {
     const response = await api.post('/timetables', timetableData);
-    return response.data.data;
+    return response.data.data || response.data;
   }
 
   // Update timetable (admin only)
   async updateTimetable(id: string, timetableData: UpdateTimetableData): Promise<Timetable> {
     const response = await api.put(`/timetables/${id}`, timetableData);
-    return response.data.data;
+    return response.data.data || response.data;
   }
 
   // Delete timetable (admin only)

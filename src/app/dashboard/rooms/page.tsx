@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import { AddRoomModal, EditRoomModal } from "@/components/RoomModals";
-import roomService, { Room, CreateRoomData, UpdateRoomData } from "@/services/roomService";
+import roomService, {
+  Room,
+  CreateRoomData,
+  UpdateRoomData,
+} from "@/services/roomService";
 import {
   Plus,
   Search,
@@ -27,7 +31,7 @@ export default function RoomsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-  
+
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [roomTypeFilter, setRoomTypeFilter] = useState("");
@@ -112,9 +116,12 @@ export default function RoomsPage() {
   const getRoomTypeColor = (type: string) => {
     const colors: any = {
       lab: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      classroom: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      "lecture-hall": "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      "seminar-room": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      classroom:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      "lecture-hall":
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      "seminar-room":
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
       auditorium: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     };
     return colors[type] || colors.classroom;
@@ -125,7 +132,7 @@ export default function RoomsPage() {
   if (!user) return null;
 
   return (
-    <DashboardLayout user={user}>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -204,7 +211,9 @@ export default function RoomsPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading rooms...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
+              Loading rooms...
+            </p>
           </div>
         ) : rooms.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
@@ -247,7 +256,10 @@ export default function RoomsPage() {
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
-                      <span>{room.building}{room.floor ? `, Floor ${room.floor}` : ""}</span>
+                      <span>
+                        {room.building}
+                        {room.floor ? `, Floor ${room.floor}` : ""}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
@@ -351,6 +363,6 @@ export default function RoomsPage() {
         onSubmit={handleEditRoom}
         room={selectedRoom}
       />
-    </DashboardLayout>
+    </>
   );
 }

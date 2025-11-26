@@ -4,6 +4,9 @@ import connectDB from '@/lib/db';
 import ClassSection from '@/models/ClassSection';
 import User from '@/models/User';
 
+// Import Room model as side effect to ensure it's registered
+import '@/models/Room';
+
 interface DecodedToken {
   userId: string;
   email: string;

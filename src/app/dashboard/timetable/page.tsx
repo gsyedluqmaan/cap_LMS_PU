@@ -3,14 +3,30 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
-import timetableService, { Timetable, TimetableSlot } from "@/services/timetableService";
+import timetableService, {
+  Timetable,
+  TimetableSlot,
+} from "@/services/timetableService";
 import classService from "@/services/classService";
 import { CalendarDays, Sparkles, AlertCircle, CheckCircle } from "lucide-react";
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 const TIME_SLOTS = [
-  '09:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00',
-  '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00'
+  "09:00-10:00",
+  "10:00-11:00",
+  "11:00-12:00",
+  "12:00-13:00",
+  "13:00-14:00",
+  "14:00-15:00",
+  "15:00-16:00",
+  "16:00-17:00",
 ];
 
 export default function TimetablePage() {
@@ -33,78 +49,120 @@ export default function TimetablePage() {
   }, [router]);
 
   useEffect(() => {
+    console.log('🔄 User effect triggered, user:', user?.role);
     if (user) {
       if (user.role === "admin") {
+        console.log('👤 Admin user detected, fetching classes...');
         fetchClasses();
       } else {
+        console.log('👤 Non-admin user, fetching timetables...');
         fetchTimetables();
       }
     }
   }, [user]);
 
   useEffect(() => {
-    if (user?.role === "admin" && selectedClassId) {
+    console.log('🔄 SelectedClassId effect triggered:', selectedClassId, 'User role:', user?.role);
+    // For admin, fetch timetables when user is loaded (with or without selectedClassId)
+    // If no selectedClassId, fetch all timetables
+    if (user?.role === "admin") {
+      console.log('📞 Calling fetchTimetables for admin...');
       fetchTimetables();
     }
-  }, [selectedClassId]);
+  }, [selectedClassId, user]);
 
   const fetchClasses = async () => {
     try {
+      console.log('📚 Fetching classes...');
       const response = await classService.getClasses();
+      console.log('✅ Classes fetched:', response.data?.length || 0, 'classes');
       setClasses(response.data || []);
       if (response.data && response.data.length > 0) {
-        setSelectedClassId(response.data[0]._id);
+        const firstClassId = response.data[0]._id;
+        console.log('📌 Setting selectedClassId to:', firstClassId);
+        setSelectedClassId(firstClassId);
+      } else {
+        console.log('⚠️ No classes found');
       }
     } catch (error) {
-      console.error("Error fetching classes:", error);
+      console.error("❌ Error fetching classes:", error);
     }
   };
 
   const fetchTimetables = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching timetables - User role:', user?.role);
+      console.log('🔍 Selected class ID:', selectedClassId);
+      
       const params: any = {};
+      // Only add classSection filter if one is selected
       if (user.role === "admin" && selectedClassId) {
         params.classSection = selectedClassId;
+        console.log('🔍 Filtering by class section:', selectedClassId);
+      } else if (user.role === "admin") {
+        console.log('🔍 Fetching all timetables (no class filter)');
       }
+      
+      console.log('🔍 API call params:', params);
 
       const data = await timetableService.getTimetables(params);
       
+      console.log('✅ Timetables fetched successfully:', data);
+
       // Handle different response formats based on role
       if (user.role === "teacher" && data.aggregatedView) {
         setSlots(data.slots || []);
         setTimetables(data.timetables || []);
       } else if (user.role === "student") {
-        setTimetables(data.timetables || []);
-        if (data.timetables && data.timetables.length > 0) {
-          setSlots(data.timetables[0].slots || []);
+        // For student, response is { data: { classSection: {...}, timetables: [...] } }
+        const timetablesData = data.data?.timetables || data.timetables || [];
+        console.log('📋 Student timetables data:', timetablesData);
+        setTimetables(timetablesData);
+        if (timetablesData.length > 0) {
+          setSlots(timetablesData[0].slots || []);
+          console.log('📋 Slots set for student:', timetablesData[0].slots);
+        } else {
+          console.log('⚠️ No timetables found for student');
         }
       } else if (user.role === "admin") {
-        setTimetables(Array.isArray(data) ? data : []);
-        if (data.length > 0) {
-          setSlots(data[0].slots || []);
+        // For admin, data is { data: [...] } from the service
+        const timetablesData = data.data || data || [];
+        console.log('📋 Admin timetables data:', timetablesData);
+        setTimetables(timetablesData);
+        if (timetablesData.length > 0) {
+          setSlots(timetablesData[0].slots || []);
+          console.log('📋 Slots set:', timetablesData[0].slots);
+        } else {
+          console.log('⚠️ No timetables found');
         }
       }
-    } catch (error) {
-      console.error("Error fetching timetables:", error);
+    } catch (error: any) {
+      console.error("❌ Error fetching timetables:", error);
+      console.error("❌ Error details:", error.response?.data || error.message);
     } finally {
       setLoading(false);
+      console.log('✅ Loading complete');
     }
   };
 
   const getSlotForDayAndTime = (day: string, time: string) => {
-    const [start, end] = time.split('-');
+    const [start, end] = time.split("-");
     return slots.find(
-      slot => slot.day === day && slot.startTime === start && slot.endTime === end
+      (slot) =>
+        slot.day === day && slot.startTime === start && slot.endTime === end
     );
   };
 
   const getSessionTypeColor = (sessionType: string) => {
     const colors: any = {
-      theory: "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700",
+      theory:
+        "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700",
       lab: "bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-700",
-      practical: "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700",
-      tutorial: "bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-700",
+      practical:
+        "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700",
+      tutorial:
+        "bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-700",
     };
     return colors[sessionType] || colors.theory;
   };
@@ -114,7 +172,7 @@ export default function TimetablePage() {
   if (!user) return null;
 
   return (
-    <DashboardLayout user={user}>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -163,7 +221,9 @@ export default function TimetablePage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading timetable...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
+              Loading timetable...
+            </p>
           </div>
         ) : slots.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
@@ -207,7 +267,7 @@ export default function TimetablePage() {
                         <td
                           key={`${day}-${time}`}
                           className={`border border-gray-200 dark:border-gray-600 p-2 ${
-                            slot ? getSessionTypeColor(slot.sessionType) : ''
+                            slot ? getSessionTypeColor(slot.sessionType) : ""
                           }`}
                         >
                           {slot ? (
@@ -216,19 +276,21 @@ export default function TimetablePage() {
                                 {slot.subject}
                               </div>
                               <div className="text-xs text-gray-600 dark:text-gray-400">
-                                {user.role === "teacher" && slot.classSection ? (
+                                {user.role === "teacher" &&
+                                slot.classSection ? (
                                   <div>{slot.classSection.className}</div>
                                 ) : (
                                   <div>{slot.teacher?.name || "Teacher"}</div>
                                 )}
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-500">
-                                {slot.room?.roomNumber || "Room"} - {slot.sessionType}
+                                {slot.room?.roomNumber || "Room"} -{" "}
+                                {slot.sessionType}
                               </div>
                             </div>
                           ) : (
                             <div className="text-xs text-gray-400 dark:text-gray-600 text-center">
-                              {time === '12:00-13:00' ? 'Lunch' : '-'}
+                              {time === "12:00-13:00" ? "Lunch" : "-"}
                             </div>
                           )}
                         </td>
@@ -249,19 +311,27 @@ export default function TimetablePage() {
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-blue-200 dark:bg-blue-700"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Theory</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Theory
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-purple-200 dark:bg-purple-700"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Lab</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Lab
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-green-200 dark:bg-green-700"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Practical</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Practical
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-yellow-200 dark:bg-yellow-700"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Tutorial</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Tutorial
+              </span>
             </div>
           </div>
         </div>
@@ -277,16 +347,22 @@ export default function TimetablePage() {
           }}
         />
       )}
-    </DashboardLayout>
+    </>
   );
 }
 
 // Generate Timetable Modal Component
-function GenerateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+function GenerateModal({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
   const [formData, setFormData] = useState({
     academicYear: "2024-2025",
     semester: "Fall 2024",
-    effectiveFrom: new Date().toISOString().split('T')[0],
+    effectiveFrom: new Date().toISOString().split("T")[0],
     effectiveTo: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -324,7 +400,9 @@ function GenerateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
                 type="text"
                 required
                 value={formData.academicYear}
-                onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, academicYear: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="e.g., 2024-2025"
               />
@@ -338,7 +416,9 @@ function GenerateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
                 type="text"
                 required
                 value={formData.semester}
-                onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, semester: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="e.g., Fall 2024"
               />
@@ -352,7 +432,9 @@ function GenerateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
                 type="date"
                 required
                 value={formData.effectiveFrom}
-                onChange={(e) => setFormData({ ...formData, effectiveFrom: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, effectiveFrom: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
@@ -364,7 +446,9 @@ function GenerateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
               <input
                 type="date"
                 value={formData.effectiveTo}
-                onChange={(e) => setFormData({ ...formData, effectiveTo: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, effectiveTo: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
@@ -395,7 +479,8 @@ function GenerateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
                   {result.message}
                 </div>
                 <div className="text-sm text-green-700 dark:text-green-300">
-                  Generated {result.data.summary.generated} of {result.data.summary.total} timetables
+                  Generated {result.data.summary.generated} of{" "}
+                  {result.data.summary.total} timetables
                 </div>
               </div>
             </div>

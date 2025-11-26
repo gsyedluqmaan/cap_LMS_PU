@@ -224,19 +224,27 @@ export interface CreateClassData extends CreateOnlineClassData {}
 export interface UpdateClassData extends UpdateOnlineClassData {}
 
 // New ClassSection interfaces and service
+export interface SubjectTeacher {
+  subject: string;
+  teacher: string | any;
+  hoursPerWeek: number;
+  sessionType: 'theory' | 'lab' | 'practical' | 'tutorial';
+}
+
 export interface ClassSection {
   _id: string;
   className: string;
   classCode: string;
   description?: string;
-  subject?: string;
+  subjects: SubjectTeacher[];
   department: string;
   semester?: string;
   academicYear: string;
-  teachers: string[] | any[];
   students: string[] | any[];
   maxStudents: number;
   currentEnrollment: number;
+  theoryRoom?: string | any;
+  labRoom?: string | any;
   schedule: {
     days: string[];
     startTime: string;
@@ -245,7 +253,7 @@ export interface ClassSection {
     building?: string;
   }[];
   isActive: boolean;
-  createdBy: string;
+  createdBy: string | any;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -254,13 +262,14 @@ export interface CreateClassSectionData {
   className: string;
   classCode?: string;
   description?: string;
-  subject?: string;
+  subjects: SubjectTeacher[];
   department: string;
   semester?: string;
   academicYear: string;
-  teachers?: string[];
   students?: string[];
   maxStudents: number;
+  theoryRoom?: string;
+  labRoom?: string;
   schedule?: {
     days: string[];
     startTime: string;

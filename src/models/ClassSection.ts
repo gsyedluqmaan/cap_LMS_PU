@@ -214,10 +214,14 @@ ClassSectionSchema.pre('save', function(next) {
 
 // Virtual for formatted schedule
 ClassSectionSchema.virtual('formattedSchedule').get(function() {
-  return (this as any).schedule.map((item: any) => ({
+  // Check if schedule exists and is an array before mapping
+  if (!this.schedule || !Array.isArray(this.schedule)) {
+    return [];
+  }
+  return this.schedule.map((item: any) => ({
     ...item,
     timeRange: `${item.startTime} - ${item.endTime}`,
-    daysString: item.days.join(', '),
+    daysString: item.days?.join(', ') || '',
     location: item.room && item.building ? `${item.room}, ${item.building}` : item.room || item.building || 'TBA'
   }));
 });

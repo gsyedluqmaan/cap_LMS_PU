@@ -8,12 +8,17 @@ import User from '@/models/User';
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest) {
+  // Check both cookie and authorization header
+  const cookieToken = request.cookies.get('authToken')?.value;
   const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  
+  const token = cookieToken || headerToken;
+  
+  if (!token) {
     return null;
   }
 
-  const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key') as any;
     const user = await User.findById(decoded.userId);
@@ -183,13 +188,13 @@ export async function POST(request: NextRequest) {
 
               if (hoursAssigned >= hoursNeeded) break outerLoop;
 
-              // Check if teacher is available
+              // Check if teacher is available (only check against global slots, not current class slots)
               if (!isTeacherAvailable(
                 subjectTeacher.teacher._id,
                 day,
                 timeSlot.startTime,
                 timeSlot.endTime,
-                [...globalSlots, ...slots]
+                globalSlots  // Only check global conflicts, not within same class
               )) {
                 continue;
               }
@@ -202,7 +207,7 @@ export async function POST(request: NextRequest) {
                 day,
                 timeSlot.startTime,
                 timeSlot.endTime,
-                [...globalSlots, ...slots]
+                globalSlots  // Only check global conflicts, not within same class
               )) {
                 assignedRoom = preferredRoom;
               } else {
@@ -214,7 +219,7 @@ export async function POST(request: NextRequest) {
                         day,
                         timeSlot.startTime,
                         timeSlot.endTime,
-                        [...globalSlots, ...slots]
+                        globalSlots  // Only check global conflicts, not within same class
                       )) {
                     assignedRoom = room;
                     break;

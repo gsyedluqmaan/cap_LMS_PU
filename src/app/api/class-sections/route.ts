@@ -4,6 +4,9 @@ import connectDB from '@/lib/db';
 import ClassSection from '@/models/ClassSection';
 import User from '@/models/User';
 
+// Import Room model as side effect to ensure it's registered
+import '@/models/Room';
+
 interface DecodedToken {
   userId: string;
   email: string;
@@ -161,13 +164,33 @@ export async function POST(request: NextRequest) {
     // Validate teachers exist and have teacher role
     if (subjects.length > 0) {
       const teacherIds = subjects.map((s: any) => s.teacher);
+      console.log('🔍 Checking teacher IDs:', teacherIds);
+      
       const teacherUsers = await User.find({ 
         _id: { $in: teacherIds }, 
         role: 'teacher' 
       });
+      
+      console.log('✅ Found teachers:', teacherUsers.length);
+      console.log('📋 Teacher details:', teacherUsers.map(t => ({ id: t._id, name: t.name, role: t.role })));
+      console.log('❓ Expected teachers:', teacherIds.length);
+      
       if (teacherUsers.length !== teacherIds.length) {
+        // Find which teacher IDs are missing
+        const foundIds = teacherUsers.map(t => t._id.toString());
+        const missingIds = teacherIds.filter((id: string) => !foundIds.includes(id));
+        
+        console.log('❌ Missing teacher IDs:', missingIds);
+        
         return NextResponse.json(
-          { error: 'Some selected teachers are invalid' },
+          { 
+            error: 'Some selected teachers are invalid',
+            details: {
+              expected: teacherIds.length,
+              found: teacherUsers.length,
+              missingIds: missingIds
+            }
+          },
           { status: 400 }
         );
       }
