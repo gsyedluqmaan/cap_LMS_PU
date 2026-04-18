@@ -1,10 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
-import { ClassSection, CreateClassSectionData, SubjectTeacher } from '@/services/classService';
-import { User } from '@/services/userService';
-import { Room } from '@/services/roomService';
+import { useState, useEffect } from "react";
+import { X, Plus, Trash2 } from "lucide-react";
+import {
+  ClassSection,
+  CreateClassSectionData,
+  SubjectTeacher,
+} from "@/services/classService";
+import { User } from "@/services/userService";
+import { Room } from "@/services/roomService";
 
 interface CreateClassModalProps {
   isOpen: boolean;
@@ -17,50 +21,67 @@ interface CreateClassModalProps {
 interface EditClassModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (id: string, data: Partial<CreateClassSectionData>) => Promise<void>;
+  onSubmit: (
+    id: string,
+    data: Partial<CreateClassSectionData>,
+  ) => Promise<void>;
   classData: ClassSection;
   teachers: User[];
   rooms: Room[];
 }
 
-export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }: CreateClassModalProps) {
+export function CreateClassModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  teachers,
+  rooms,
+}: CreateClassModalProps) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  const [formData, setFormData] = useState<CreateClassSectionData & { subjects: SubjectTeacher[] }>({
-    className: '',
-    classCode: '',
-    description: '',
+  const [error, setError] = useState("");
+
+  const [formData, setFormData] = useState<
+    CreateClassSectionData & { subjects: SubjectTeacher[] }
+  >({
+    className: "",
+    classCode: "",
+    description: "",
     subjects: [],
-    department: '',
-    semester: '',
-    academicYear: '',
+    department: "",
+    semester: "",
+    academicYear: "",
     students: [],
     maxStudents: 50,
-    theoryRoom: '',
-    labRoom: '',
+    theoryRoom: "",
+    labRoom: "",
     schedule: [],
     isActive: true,
   });
 
   const [currentSubject, setCurrentSubject] = useState<SubjectTeacher>({
-    subject: '',
-    teacher: '',
+    subject: "",
+    teacher: "",
     hoursPerWeek: 0,
-    sessionType: 'theory',
+    sessionType: "theory",
   });
 
-  const theoryRooms = rooms.filter(r => 
-    ['classroom', 'lecture-hall', 'seminar-room'].includes(r.roomType) && r.isActive
+  const theoryRooms = rooms.filter(
+    (r) =>
+      ["classroom", "lecture-hall", "seminar-room"].includes(r.roomType) &&
+      r.isActive,
   );
-  
-  const labRooms = rooms.filter(r => 
-    r.roomType === 'lab' && r.isActive && r.hasComputers
+
+  const labRooms = rooms.filter(
+    (r) => r.roomType === "lab" && r.isActive && r.hasComputers,
   );
 
   const handleAddSubject = () => {
-    if (!currentSubject.subject || !currentSubject.teacher || currentSubject.hoursPerWeek <= 0) {
-      setError('Please fill in all subject fields');
+    if (
+      !currentSubject.subject ||
+      !currentSubject.teacher ||
+      currentSubject.hoursPerWeek <= 0
+    ) {
+      setError("Please fill in all subject fields");
       return;
     }
 
@@ -70,12 +91,12 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
     });
 
     setCurrentSubject({
-      subject: '',
-      teacher: '',
+      subject: "",
+      teacher: "",
       hoursPerWeek: 0,
-      sessionType: 'theory',
+      sessionType: "theory",
     });
-    setError('');
+    setError("");
   };
 
   const handleRemoveSubject = (index: number) => {
@@ -87,36 +108,38 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.subjects.length === 0) {
-      setError('Please add at least one subject');
+      setError("Please add at least one subject");
       return;
     }
 
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       await onSubmit(formData);
       onClose();
       // Reset form
       setFormData({
-        className: '',
-        classCode: '',
-        description: '',
+        className: "",
+        classCode: "",
+        description: "",
         subjects: [],
-        department: '',
-        semester: '',
-        academicYear: '',
+        department: "",
+        semester: "",
+        academicYear: "",
         students: [],
         maxStudents: 50,
-        theoryRoom: '',
-        labRoom: '',
+        theoryRoom: "",
+        labRoom: "",
         schedule: [],
         isActive: true,
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to create class');
+      setError(
+        err.response?.data?.error || err.message || "Failed to create class",
+      );
     } finally {
       setLoading(false);
     }
@@ -129,8 +152,13 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Class Section</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Create New Class Section
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
               <X size={24} />
             </button>
           </div>
@@ -152,7 +180,9 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   type="text"
                   required
                   value={formData.className}
-                  onChange={(e) => setFormData({ ...formData, className: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, className: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="e.g., Computer Science 3rd Year"
                 />
@@ -165,7 +195,12 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                 <input
                   type="text"
                   value={formData.classCode}
-                  onChange={(e) => setFormData({ ...formData, classCode: e.target.value.toUpperCase() })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      classCode: e.target.value.toUpperCase(),
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Auto-generated if empty"
                 />
@@ -178,12 +213,16 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                 <select
                   required
                   value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, department: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">Select Department</option>
                   <option value="Computer Science">Computer Science</option>
-                  <option value="Information Technology">Information Technology</option>
+                  <option value="Information Technology">
+                    Information Technology
+                  </option>
                   <option value="Electronics">Electronics</option>
                   <option value="Mechanical">Mechanical</option>
                   <option value="Civil">Civil</option>
@@ -197,7 +236,9 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                 </label>
                 <select
                   value={formData.semester}
-                  onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, semester: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">Select Semester</option>
@@ -220,7 +261,9 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   type="text"
                   required
                   value={formData.academicYear}
-                  onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, academicYear: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="e.g., 2024-2025"
                 />
@@ -236,7 +279,12 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   min="1"
                   max="200"
                   value={formData.maxStudents}
-                  onChange={(e) => setFormData({ ...formData, maxStudents: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      maxStudents: parseInt(e.target.value),
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
@@ -248,7 +296,9 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Optional class description"
@@ -257,7 +307,9 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
 
             {/* Room Allocation */}
             <div className="border-t dark:border-gray-700 pt-4">
-              <h3 className="text-lg font-semibold mb-3 dark:text-white">Room Allocation</h3>
+              <h3 className="text-lg font-semibold mb-3 dark:text-white">
+                Room Allocation
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -265,13 +317,16 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   </label>
                   <select
                     value={formData.theoryRoom}
-                    onChange={(e) => setFormData({ ...formData, theoryRoom: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, theoryRoom: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">Select Theory Room</option>
                     {theoryRooms.map((room) => (
                       <option key={room._id} value={room._id}>
-                        {room.roomNumber} - {room.roomName} ({room.building}, Capacity: {room.seatingCapacity})
+                        {room.roomNumber} - {room.roomName} ({room.building},
+                        Capacity: {room.seatingCapacity})
                       </option>
                     ))}
                   </select>
@@ -283,13 +338,16 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   </label>
                   <select
                     value={formData.labRoom}
-                    onChange={(e) => setFormData({ ...formData, labRoom: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, labRoom: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">Select Lab Room</option>
                     {labRooms.map((room) => (
                       <option key={room._id} value={room._id}>
-                        {room.roomNumber} - {room.roomName} ({room.building}, {room.computerCount} PCs)
+                        {room.roomNumber} - {room.roomName} ({room.building},{" "}
+                        {room.computerCount} PCs)
                       </option>
                     ))}
                   </select>
@@ -299,20 +357,35 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
 
             {/* Subject Assignment */}
             <div className="border-t dark:border-gray-700 pt-4">
-              <h3 className="text-lg font-semibold mb-3 dark:text-white">Subject & Teacher Assignment</h3>
-              
+              <h3 className="text-lg font-semibold mb-3 dark:text-white">
+                Subject & Teacher Assignment
+              </h3>
+
               {/* Current Subjects List */}
               {formData.subjects.length > 0 && (
                 <div className="mb-4 space-y-2">
                   {formData.subjects.map((subject, index) => {
-                    const teacher = teachers.find(t => t._id === subject.teacher);
+                    const teacher = teachers.find(
+                      (t) => t._id === subject.teacher,
+                    );
                     return (
-                      <div key={index} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded"
+                      >
                         <div className="flex-1">
-                          <span className="font-medium dark:text-white">{subject.subject}</span>
-                          <span className="text-gray-600 dark:text-gray-400 mx-2">•</span>
-                          <span className="text-gray-700 dark:text-gray-300">{teacher?.name || 'Unknown Teacher'}</span>
-                          <span className="text-gray-600 dark:text-gray-400 mx-2">•</span>
+                          <span className="font-medium dark:text-white">
+                            {subject.subject}
+                          </span>
+                          <span className="text-gray-600 dark:text-gray-400 mx-2">
+                            •
+                          </span>
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {teacher?.name || "Unknown Teacher"}
+                          </span>
+                          <span className="text-gray-600 dark:text-gray-400 mx-2">
+                            •
+                          </span>
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             {subject.hoursPerWeek}h/week ({subject.sessionType})
                           </span>
@@ -339,7 +412,12 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   <input
                     type="text"
                     value={currentSubject.subject}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, subject: e.target.value })}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        subject: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="e.g., Data Structures"
                   />
@@ -351,7 +429,12 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   </label>
                   <select
                     value={currentSubject.teacher}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, teacher: e.target.value })}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        teacher: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">Select Teacher</option>
@@ -371,8 +454,13 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                     type="number"
                     min="1"
                     max="20"
-                    value={currentSubject.hoursPerWeek || ''}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, hoursPerWeek: parseInt(e.target.value) || 0 })}
+                    value={currentSubject.hoursPerWeek || ""}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        hoursPerWeek: parseInt(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
@@ -383,7 +471,12 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                   </label>
                   <select
                     value={currentSubject.sessionType}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, sessionType: e.target.value as any })}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        sessionType: e.target.value as any,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="theory">Theory</option>
@@ -419,7 +512,7 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
                 disabled={loading || formData.subjects.length === 0}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Class Section'}
+                {loading ? "Creating..." : "Create Class Section"}
               </button>
             </div>
           </form>
@@ -429,11 +522,20 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
   );
 }
 
-export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers, rooms }: EditClassModalProps) {
+export function EditClassModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  classData,
+  teachers,
+  rooms,
+}: EditClassModalProps) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  const [formData, setFormData] = useState<Partial<CreateClassSectionData> & { subjects: SubjectTeacher[] }>({
+  const [error, setError] = useState("");
+
+  const [formData, setFormData] = useState<
+    Partial<CreateClassSectionData> & { subjects: SubjectTeacher[] }
+  >({
     className: classData.className,
     description: classData.description,
     subjects: classData.subjects,
@@ -441,29 +543,41 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
     semester: classData.semester,
     academicYear: classData.academicYear,
     maxStudents: classData.maxStudents,
-    theoryRoom: typeof classData.theoryRoom === 'object' ? classData.theoryRoom?._id : classData.theoryRoom,
-    labRoom: typeof classData.labRoom === 'object' ? classData.labRoom?._id : classData.labRoom,
+    theoryRoom:
+      typeof classData.theoryRoom === "object"
+        ? classData.theoryRoom?._id
+        : classData.theoryRoom,
+    labRoom:
+      typeof classData.labRoom === "object"
+        ? classData.labRoom?._id
+        : classData.labRoom,
     isActive: classData.isActive,
   });
 
   const [currentSubject, setCurrentSubject] = useState<SubjectTeacher>({
-    subject: '',
-    teacher: '',
+    subject: "",
+    teacher: "",
     hoursPerWeek: 0,
-    sessionType: 'theory',
+    sessionType: "theory",
   });
 
-  const theoryRooms = rooms.filter(r => 
-    ['classroom', 'lecture-hall', 'seminar-room'].includes(r.roomType) && r.isActive
+  const theoryRooms = rooms.filter(
+    (r) =>
+      ["classroom", "lecture-hall", "seminar-room"].includes(r.roomType) &&
+      r.isActive,
   );
-  
-  const labRooms = rooms.filter(r => 
-    r.roomType === 'lab' && r.isActive && r.hasComputers
+
+  const labRooms = rooms.filter(
+    (r) => r.roomType === "lab" && r.isActive && r.hasComputers,
   );
 
   const handleAddSubject = () => {
-    if (!currentSubject.subject || !currentSubject.teacher || currentSubject.hoursPerWeek <= 0) {
-      setError('Please fill in all subject fields');
+    if (
+      !currentSubject.subject ||
+      !currentSubject.teacher ||
+      currentSubject.hoursPerWeek <= 0
+    ) {
+      setError("Please fill in all subject fields");
       return;
     }
 
@@ -473,12 +587,12 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
     });
 
     setCurrentSubject({
-      subject: '',
-      teacher: '',
+      subject: "",
+      teacher: "",
       hoursPerWeek: 0,
-      sessionType: 'theory',
+      sessionType: "theory",
     });
-    setError('');
+    setError("");
   };
 
   const handleRemoveSubject = (index: number) => {
@@ -490,20 +604,22 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.subjects || formData.subjects.length === 0) {
-      setError('Please add at least one subject');
+      setError("Please add at least one subject");
       return;
     }
 
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       await onSubmit(classData._id, formData);
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to update class');
+      setError(
+        err.response?.data?.error || err.message || "Failed to update class",
+      );
     } finally {
       setLoading(false);
     }
@@ -516,8 +632,13 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold dark:text-white">Edit Class Section</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <h2 className="text-2xl font-bold dark:text-white">
+              Edit Class Section
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
               <X size={24} />
             </button>
           </div>
@@ -539,7 +660,9 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                   type="text"
                   required
                   value={formData.className}
-                  onChange={(e) => setFormData({ ...formData, className: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, className: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
@@ -563,12 +686,16 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                 <select
                   required
                   value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, department: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">Select Department</option>
                   <option value="Computer Science">Computer Science</option>
-                  <option value="Information Technology">Information Technology</option>
+                  <option value="Information Technology">
+                    Information Technology
+                  </option>
                   <option value="Electronics">Electronics</option>
                   <option value="Mechanical">Mechanical</option>
                   <option value="Civil">Civil</option>
@@ -582,12 +709,16 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                 </label>
                 <select
                   value={formData.semester}
-                  onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, semester: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">Select Semester</option>
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                    <option key={sem} value={sem.toString()}>Semester {sem}</option>
+                    <option key={sem} value={sem.toString()}>
+                      Semester {sem}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -600,7 +731,9 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                   type="text"
                   required
                   value={formData.academicYear}
-                  onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, academicYear: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
@@ -615,7 +748,12 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                   min="1"
                   max="200"
                   value={formData.maxStudents}
-                  onChange={(e) => setFormData({ ...formData, maxStudents: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      maxStudents: parseInt(e.target.value),
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
@@ -627,7 +765,9 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
@@ -635,21 +775,26 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
 
             {/* Room Allocation */}
             <div className="border-t dark:border-gray-700 pt-4">
-              <h3 className="text-lg font-semibold mb-3 dark:text-white">Room Allocation</h3>
+              <h3 className="text-lg font-semibold mb-3 dark:text-white">
+                Room Allocation
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Theory Room
                   </label>
                   <select
-                    value={formData.theoryRoom || ''}
-                    onChange={(e) => setFormData({ ...formData, theoryRoom: e.target.value })}
+                    value={formData.theoryRoom || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, theoryRoom: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">Select Theory Room</option>
                     {theoryRooms.map((room) => (
                       <option key={room._id} value={room._id}>
-                        {room.roomNumber} - {room.roomName} ({room.building}, Capacity: {room.seatingCapacity})
+                        {room.roomNumber} - {room.roomName} ({room.building},
+                        Capacity: {room.seatingCapacity})
                       </option>
                     ))}
                   </select>
@@ -660,14 +805,17 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                     Lab Room
                   </label>
                   <select
-                    value={formData.labRoom || ''}
-                    onChange={(e) => setFormData({ ...formData, labRoom: e.target.value })}
+                    value={formData.labRoom || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, labRoom: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">Select Lab Room</option>
                     {labRooms.map((room) => (
                       <option key={room._id} value={room._id}>
-                        {room.roomNumber} - {room.roomName} ({room.building}, {room.computerCount} PCs)
+                        {room.roomNumber} - {room.roomName} ({room.building},{" "}
+                        {room.computerCount} PCs)
                       </option>
                     ))}
                   </select>
@@ -677,21 +825,37 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
 
             {/* Subject Assignment */}
             <div className="border-t dark:border-gray-700 pt-4">
-              <h3 className="text-lg font-semibold mb-3 dark:text-white">Subject & Teacher Assignment</h3>
-              
+              <h3 className="text-lg font-semibold mb-3 dark:text-white">
+                Subject & Teacher Assignment
+              </h3>
+
               {/* Current Subjects List */}
               {formData.subjects && formData.subjects.length > 0 && (
                 <div className="mb-4 space-y-2">
                   {formData.subjects.map((subject, index) => {
-                    const teacherId = typeof subject.teacher === 'object' ? subject.teacher._id : subject.teacher;
-                    const teacher = teachers.find(t => t._id === teacherId);
+                    const teacherId =
+                      typeof subject.teacher === "object"
+                        ? subject.teacher._id
+                        : subject.teacher;
+                    const teacher = teachers.find((t) => t._id === teacherId);
                     return (
-                      <div key={index} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded"
+                      >
                         <div className="flex-1">
-                          <span className="font-medium dark:text-white">{subject.subject}</span>
-                          <span className="text-gray-600 dark:text-gray-400 mx-2">•</span>
-                          <span className="text-gray-700 dark:text-gray-300">{teacher?.name || 'Unknown Teacher'}</span>
-                          <span className="text-gray-600 dark:text-gray-400 mx-2">•</span>
+                          <span className="font-medium dark:text-white">
+                            {subject.subject}
+                          </span>
+                          <span className="text-gray-600 dark:text-gray-400 mx-2">
+                            •
+                          </span>
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {teacher?.name || "Unknown Teacher"}
+                          </span>
+                          <span className="text-gray-600 dark:text-gray-400 mx-2">
+                            •
+                          </span>
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             {subject.hoursPerWeek}h/week ({subject.sessionType})
                           </span>
@@ -718,7 +882,12 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                   <input
                     type="text"
                     value={currentSubject.subject}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, subject: e.target.value })}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        subject: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="e.g., Data Structures"
                   />
@@ -730,7 +899,12 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                   </label>
                   <select
                     value={currentSubject.teacher}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, teacher: e.target.value })}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        teacher: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">Select Teacher</option>
@@ -750,8 +924,13 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                     type="number"
                     min="1"
                     max="20"
-                    value={currentSubject.hoursPerWeek || ''}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, hoursPerWeek: parseInt(e.target.value) || 0 })}
+                    value={currentSubject.hoursPerWeek || ""}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        hoursPerWeek: parseInt(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
@@ -762,7 +941,12 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                   </label>
                   <select
                     value={currentSubject.sessionType}
-                    onChange={(e) => setCurrentSubject({ ...currentSubject, sessionType: e.target.value as any })}
+                    onChange={(e) =>
+                      setCurrentSubject({
+                        ...currentSubject,
+                        sessionType: e.target.value as any,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="theory">Theory</option>
@@ -789,10 +973,15 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, isActive: e.target.checked })
+                }
                 className="w-4 h-4 text-blue-500"
               />
-              <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="isActive"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Class is Active
               </label>
             </div>
@@ -809,10 +998,14 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
               </button>
               <button
                 type="submit"
-                disabled={loading || !formData.subjects || formData.subjects.length === 0}
+                disabled={
+                  loading ||
+                  !formData.subjects ||
+                  formData.subjects.length === 0
+                }
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
-                {loading ? 'Updating...' : 'Update Class Section'}
+                {loading ? "Updating..." : "Update Class Section"}
               </button>
             </div>
           </form>

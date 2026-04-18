@@ -1,21 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import connectDB from '@/lib/db';
-import User from '@/models/User';
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import connectDB from "@/lib/db";
+import User from "@/models/User";
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }
 
   const token = authHeader.substring(7);
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key') as any;
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "fallback-secret-key",
+    ) as any;
     const user = await User.findById(decoded.userId);
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== "admin") {
       return null;
     }
     return user;
@@ -32,29 +35,29 @@ export async function POST(request: NextRequest) {
     const admin = await verifyAdminToken(request);
     if (!admin) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
-        { status: 401 }
+        { error: "Unauthorized. Admin access required." },
+        { status: 401 },
       );
     }
 
     const userData = await request.json();
 
     // Validate required fields
-    const requiredFields = ['name', 'email', 'password', 'role'];
+    const requiredFields = ["name", "email", "password", "role"];
     for (const field of requiredFields) {
       if (!userData[field]) {
         return NextResponse.json(
           { error: `${field} is required` },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
 
     // Validate role
-    if (!['student', 'teacher'].includes(userData.role)) {
+    if (!["student", "teacher"].includes(userData.role)) {
       return NextResponse.json(
-        { error: 'Role must be either student or teacher' },
-        { status: 400 }
+        { error: "Role must be either student or teacher" },
+        { status: 400 },
       );
     }
 
@@ -62,8 +65,8 @@ export async function POST(request: NextRequest) {
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 400 }
+        { error: "User with this email already exists" },
+        { status: 400 },
       );
     }
 
@@ -72,23 +75,31 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(userData.password, salt);
 
     // Generate ID based on role
-    let generatedId = '';
-    if (userData.role === 'student') {
-      const lastStudent = await User.findOne({ role: 'student', studentId: { $exists: true } })
+    let generatedId = "";
+    if (userData.role === "student") {
+      const lastStudent = await User.findOne({
+        role: "student",
+        studentId: { $exists: true },
+      })
         .sort({ studentId: -1 })
         .limit(1);
-      
-      const lastStudentNumber = lastStudent?.studentId ? 
-        parseInt(lastStudent.studentId.replace(/\D/g, '')) : 0;
-      generatedId = `STU${(lastStudentNumber + 1).toString().padStart(4, '0')}`;
+
+      const lastStudentNumber = lastStudent?.studentId
+        ? parseInt(lastStudent.studentId.replace(/\D/g, ""))
+        : 0;
+      generatedId = `STU${(lastStudentNumber + 1).toString().padStart(4, "0")}`;
     } else {
-      const lastTeacher = await User.findOne({ role: 'teacher', employeeId: { $exists: true } })
+      const lastTeacher = await User.findOne({
+        role: "teacher",
+        employeeId: { $exists: true },
+      })
         .sort({ employeeId: -1 })
         .limit(1);
-      
-      const lastEmployeeNumber = lastTeacher?.employeeId ? 
-        parseInt(lastTeacher.employeeId.replace(/\D/g, '')) : 0;
-      generatedId = `EMP${(lastEmployeeNumber + 1).toString().padStart(4, '0')}`;
+
+      const lastEmployeeNumber = lastTeacher?.employeeId
+        ? parseInt(lastTeacher.employeeId.replace(/\D/g, ""))
+        : 0;
+      generatedId = `EMP${(lastEmployeeNumber + 1).toString().padStart(4, "0")}`;
     }
 
     // Create user object
@@ -96,7 +107,7 @@ export async function POST(request: NextRequest) {
       name: string;
       email: string;
       password: string;
-      role: 'student' | 'teacher';
+      role: "student" | "teacher";
       university: string;
       department?: string;
       isVerified: boolean;
@@ -107,13 +118,14 @@ export async function POST(request: NextRequest) {
       email: userData.email.toLowerCase().trim(),
       password: hashedPassword,
       role: userData.role,
-      university: userData.university || 'Presidency University',
+      university: userData.university || "Presidency University",
       department: userData.department?.trim(),
-      isVerified: userData.isVerified !== undefined ? userData.isVerified : true
+      isVerified:
+        userData.isVerified !== undefined ? userData.isVerified : true,
     };
 
     // Add role-specific ID
-    if (userData.role === 'student') {
+    if (userData.role === "student") {
       newUserData.studentId = userData.studentId || generatedId;
     } else {
       newUserData.employeeId = userData.employeeId || generatedId;
@@ -135,22 +147,30 @@ export async function POST(request: NextRequest) {
       employeeId: newUser.employeeId,
       isVerified: newUser.isVerified,
       createdAt: newUser.createdAt,
-      updatedAt: newUser.updatedAt
+      updatedAt: newUser.updatedAt,
     };
 
-    return NextResponse.json({
-      message: `${userData.role.charAt(0).toUpperCase() + userData.role.slice(1)} created successfully`,
-      user: userResponse
-    }, { status: 201 });
-
+    return NextResponse.json(
+      {
+        message: `${userData.role.charAt(0).toUpperCase() + userData.role.slice(1)} created successfully`,
+        user: userResponse,
+      },
+      { status: 201 },
+    );
   } catch (error: any) {
-    console.error('Create user error:', error);
-    
-    if (error.name === 'ValidationError') {
-      const validationErrors = error.errors as Record<string, { message?: string }>;
+    console.error("Create user error:", error);
+
+    if (error.name === "ValidationError") {
+      const validationErrors = error.errors as Record<
+        string,
+        { message?: string }
+      >;
       return NextResponse.json(
-        { error: Object.values(validationErrors)[0]?.message || 'Validation error' },
-        { status: 400 }
+        {
+          error:
+            Object.values(validationErrors)[0]?.message || "Validation error",
+        },
+        { status: 400 },
       );
     }
 
@@ -158,13 +178,13 @@ export async function POST(request: NextRequest) {
       const field = Object.keys(error.keyValue)[0];
       return NextResponse.json(
         { error: `${field} already exists` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

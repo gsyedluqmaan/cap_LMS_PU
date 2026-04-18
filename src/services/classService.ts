@@ -1,12 +1,12 @@
-import api from '@/lib/axios';
-import { User } from './userService';
+import api from "@/lib/axios";
+import { User } from "./userService";
 
 export interface OnlineClass {
   _id: string;
   name: string;
   description?: string;
   classCode: string;
-  classType: 'lecture' | 'workshop' | 'seminar' | 'meeting' | 'other';
+  classType: "lecture" | "workshop" | "seminar" | "meeting" | "other";
   subject?: string;
   teacher: User | string;
   students: (User | string)[];
@@ -19,14 +19,14 @@ export interface OnlineClass {
     timezone?: string;
     isRecurring: boolean;
     recurringPattern?: {
-      frequency: 'daily' | 'weekly' | 'monthly';
+      frequency: "daily" | "weekly" | "monthly";
       interval: number;
       endDate?: string;
       daysOfWeek?: number[];
     };
   };
   meetingDetails: {
-    platform: 'zoom' | 'meet' | 'teams' | 'other';
+    platform: "zoom" | "meet" | "teams" | "other";
     meetingLink?: string;
     meetingId?: string;
     password?: string;
@@ -35,7 +35,7 @@ export interface OnlineClass {
   materials?: {
     title: string;
     url: string;
-    type: 'document' | 'video' | 'link' | 'other';
+    type: "document" | "video" | "link" | "other";
   }[];
   isActive: boolean;
   isLive: boolean;
@@ -46,7 +46,7 @@ export interface OnlineClass {
     joinedAt?: string;
     leftAt?: string;
     duration?: number;
-    status: 'present' | 'absent' | 'late';
+    status: "present" | "absent" | "late";
   }[];
   createdBy: User | string;
   createdAt: string;
@@ -56,7 +56,7 @@ export interface OnlineClass {
 export interface CreateOnlineClassData {
   name: string;
   description?: string;
-  classType: 'lecture' | 'workshop' | 'seminar' | 'meeting' | 'other';
+  classType: "lecture" | "workshop" | "seminar" | "meeting" | "other";
   subject?: string;
   teacher: string;
   maxStudents?: number;
@@ -67,14 +67,14 @@ export interface CreateOnlineClassData {
     timezone?: string;
     isRecurring?: boolean;
     recurringPattern?: {
-      frequency: 'daily' | 'weekly' | 'monthly';
+      frequency: "daily" | "weekly" | "monthly";
       interval: number;
       endDate?: string;
       daysOfWeek?: number[];
     };
   };
   meetingDetails: {
-    platform: 'zoom' | 'meet' | 'teams' | 'other';
+    platform: "zoom" | "meet" | "teams" | "other";
     meetingLink?: string;
     meetingId?: string;
     password?: string;
@@ -83,7 +83,7 @@ export interface CreateOnlineClassData {
   materials?: {
     title: string;
     url: string;
-    type: 'document' | 'video' | 'link' | 'other';
+    type: "document" | "video" | "link" | "other";
   }[];
 }
 
@@ -118,8 +118,10 @@ export interface GetClassesParams {
 
 class OnlineClassService {
   // Get all online classes
-  async getClasses(params: GetClassesParams = {}): Promise<PaginatedResponse<OnlineClass>> {
-    const response = await api.get('/classes', { params });
+  async getClasses(
+    params: GetClassesParams = {},
+  ): Promise<PaginatedResponse<OnlineClass>> {
+    const response = await api.get("/classes", { params });
     return response.data;
   }
 
@@ -131,12 +133,15 @@ class OnlineClassService {
 
   // Create new online class
   async createClass(classData: CreateOnlineClassData): Promise<OnlineClass> {
-    const response = await api.post('/classes', classData);
+    const response = await api.post("/classes", classData);
     return response.data.class;
   }
 
   // Update class
-  async updateClass(id: string, classData: UpdateOnlineClassData): Promise<OnlineClass> {
+  async updateClass(
+    id: string,
+    classData: UpdateOnlineClassData,
+  ): Promise<OnlineClass> {
     const response = await api.put(`/classes/${id}`, classData);
     return response.data.class;
   }
@@ -147,15 +152,23 @@ class OnlineClassService {
   }
 
   // Add students to class
-  async addStudentsToClass(classId: string, studentIds: string[]): Promise<OnlineClass> {
-    const response = await api.post(`/classes/${classId}/students`, { studentIds });
+  async addStudentsToClass(
+    classId: string,
+    studentIds: string[],
+  ): Promise<OnlineClass> {
+    const response = await api.post(`/classes/${classId}/students`, {
+      studentIds,
+    });
     return response.data.class;
   }
 
   // Remove students from class
-  async removeStudentsFromClass(classId: string, studentIds: string[]): Promise<OnlineClass> {
-    const response = await api.delete(`/classes/${classId}/students`, { 
-      data: { studentIds } 
+  async removeStudentsFromClass(
+    classId: string,
+    studentIds: string[],
+  ): Promise<OnlineClass> {
+    const response = await api.delete(`/classes/${classId}/students`, {
+      data: { studentIds },
     });
     return response.data.class;
   }
@@ -173,14 +186,24 @@ class OnlineClassService {
   }
 
   // Start/Stop live class
-  async toggleLiveClass(classId: string, isLive: boolean): Promise<OnlineClass> {
+  async toggleLiveClass(
+    classId: string,
+    isLive: boolean,
+  ): Promise<OnlineClass> {
     const response = await api.patch(`/classes/${classId}/live`, { isLive });
     return response.data.class;
   }
 
   // Record attendance
-  async recordAttendance(classId: string, studentId: string, status: 'present' | 'absent' | 'late'): Promise<OnlineClass> {
-    const response = await api.post(`/classes/${classId}/attendance`, { studentId, status });
+  async recordAttendance(
+    classId: string,
+    studentId: string,
+    status: "present" | "absent" | "late",
+  ): Promise<OnlineClass> {
+    const response = await api.post(`/classes/${classId}/attendance`, {
+      studentId,
+      status,
+    });
     return response.data.class;
   }
 
@@ -199,18 +222,21 @@ class OnlineClassService {
     averageClassSize: number;
     classesByType: Record<string, number>;
   }> {
-    const response = await api.get('/classes/stats');
+    const response = await api.get("/classes/stats");
     return response.data;
   }
 
   // Get upcoming classes
   async getUpcomingClasses(days: number = 7): Promise<OnlineClass[]> {
-    const response = await api.get('/classes/upcoming', { params: { days } });
+    const response = await api.get("/classes/upcoming", { params: { days } });
     return response.data.classes;
   }
 
   // Join class (for students)
-  async joinClass(classId: string, joinCode?: string): Promise<{ meetingLink: string; class: OnlineClass }> {
+  async joinClass(
+    classId: string,
+    joinCode?: string,
+  ): Promise<{ meetingLink: string; class: OnlineClass }> {
     const response = await api.post(`/classes/${classId}/join`, { joinCode });
     return response.data;
   }
@@ -228,7 +254,7 @@ export interface SubjectTeacher {
   subject: string;
   teacher: string | any;
   hoursPerWeek: number;
-  sessionType: 'theory' | 'lab' | 'practical' | 'tutorial';
+  sessionType: "theory" | "lab" | "practical" | "tutorial";
 }
 
 export interface ClassSection {
@@ -320,7 +346,9 @@ export interface PaginatedClassSectionResponse {
 
 class ClassSectionService {
   private normalizeClassSection(classSection: any): ClassSection {
-    const subjects = Array.isArray(classSection?.subjects) ? classSection.subjects : [];
+    const subjects = Array.isArray(classSection?.subjects)
+      ? classSection.subjects
+      : [];
     const teachers =
       Array.isArray(classSection?.teachers) && classSection.teachers.length > 0
         ? classSection.teachers
@@ -335,21 +363,32 @@ class ClassSectionService {
   }
 
   // Get all class sections with filtering and pagination
-  async getClassSections(params?: ClassSectionQueryParams): Promise<PaginatedClassSectionResponse> {
-    const response = await api.get('/class-sections', { params });
+  async getClassSections(
+    params?: ClassSectionQueryParams,
+  ): Promise<PaginatedClassSectionResponse> {
+    const response = await api.get("/class-sections", { params });
     return {
       ...response.data,
       data: Array.isArray(response.data?.data)
-        ? response.data.data.map((classSection: any) => this.normalizeClassSection(classSection))
+        ? response.data.data.map((classSection: any) =>
+            this.normalizeClassSection(classSection),
+          )
         : [],
     };
   }
 
   // Get class sections for a specific user (student or teacher)
-  async getUserClassSections(userId: string, role: 'student' | 'teacher'): Promise<ClassSection[]> {
-    const response = await api.get(`/class-sections/user/${userId}?role=${role}`);
+  async getUserClassSections(
+    userId: string,
+    role: "student" | "teacher",
+  ): Promise<ClassSection[]> {
+    const response = await api.get(
+      `/class-sections/user/${userId}?role=${role}`,
+    );
     return Array.isArray(response.data)
-      ? response.data.map((classSection: any) => this.normalizeClassSection(classSection))
+      ? response.data.map((classSection: any) =>
+          this.normalizeClassSection(classSection),
+        )
       : [];
   }
 
@@ -360,7 +399,9 @@ class ClassSectionService {
   }
 
   // Create a new class section
-  async createClassSection(classData: CreateClassSectionData): Promise<ClassSection> {
+  async createClassSection(
+    classData: CreateClassSectionData,
+  ): Promise<ClassSection> {
     const subjects =
       classData.subjects && classData.subjects.length > 0
         ? classData.subjects
@@ -368,10 +409,10 @@ class ClassSectionService {
             subject: classData.subject || classData.className,
             teacher: teacherId,
             hoursPerWeek: 1,
-            sessionType: 'theory' as const,
+            sessionType: "theory" as const,
           })) || [];
 
-    const response = await api.post('/class-sections', {
+    const response = await api.post("/class-sections", {
       ...classData,
       subjects,
     });
@@ -379,7 +420,10 @@ class ClassSectionService {
   }
 
   // Update an existing class section
-  async updateClassSection(id: string, classData: UpdateClassSectionData): Promise<ClassSection> {
+  async updateClassSection(
+    id: string,
+    classData: UpdateClassSectionData,
+  ): Promise<ClassSection> {
     const response = await api.put(`/class-sections/${id}`, classData);
     return this.normalizeClassSection(response.data);
   }
@@ -390,26 +434,46 @@ class ClassSectionService {
   }
 
   // Add students to a class section
-  async addStudentsToClassSection(id: string, studentIds: string[]): Promise<ClassSection> {
-    const response = await api.post(`/class-sections/${id}/students`, { studentIds });
+  async addStudentsToClassSection(
+    id: string,
+    studentIds: string[],
+  ): Promise<ClassSection> {
+    const response = await api.post(`/class-sections/${id}/students`, {
+      studentIds,
+    });
     return this.normalizeClassSection(response.data);
   }
 
   // Remove students from a class section
-  async removeStudentsFromClassSection(id: string, studentIds: string[]): Promise<ClassSection> {
-    const response = await api.delete(`/class-sections/${id}/students`, { data: { studentIds } });
+  async removeStudentsFromClassSection(
+    id: string,
+    studentIds: string[],
+  ): Promise<ClassSection> {
+    const response = await api.delete(`/class-sections/${id}/students`, {
+      data: { studentIds },
+    });
     return this.normalizeClassSection(response.data);
   }
 
   // Add teachers to a class section
-  async addTeachersToClassSection(id: string, teacherIds: string[]): Promise<ClassSection> {
-    const response = await api.post(`/class-sections/${id}/teachers`, { teacherIds });
+  async addTeachersToClassSection(
+    id: string,
+    teacherIds: string[],
+  ): Promise<ClassSection> {
+    const response = await api.post(`/class-sections/${id}/teachers`, {
+      teacherIds,
+    });
     return this.normalizeClassSection(response.data);
   }
 
   // Remove teachers from a class section
-  async removeTeachersFromClassSection(id: string, teacherIds: string[]): Promise<ClassSection> {
-    const response = await api.delete(`/class-sections/${id}/teachers`, { data: { teacherIds } });
+  async removeTeachersFromClassSection(
+    id: string,
+    teacherIds: string[],
+  ): Promise<ClassSection> {
+    const response = await api.delete(`/class-sections/${id}/teachers`, {
+      data: { teacherIds },
+    });
     return this.normalizeClassSection(response.data);
   }
 }

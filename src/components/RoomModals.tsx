@@ -15,7 +15,9 @@ export const AddRoomModal = ({
   onClose,
   onSubmit,
 }: AddRoomModalProps) => {
-  const [formData, setFormData] = useState<CreateRoomData & { facilities: string[] }>({
+  const [formData, setFormData] = useState<
+    CreateRoomData & { facilities: string[] }
+  >({
     roomNumber: "",
     roomName: "",
     roomType: "classroom",
@@ -72,7 +74,10 @@ export const AddRoomModal = ({
   };
 
   const addFacility = () => {
-    if (facilityInput.trim() && !formData.facilities.includes(facilityInput.trim())) {
+    if (
+      facilityInput.trim() &&
+      !formData.facilities.includes(facilityInput.trim())
+    ) {
       setFormData({
         ...formData,
         facilities: [...formData.facilities, facilityInput.trim()],
@@ -117,7 +122,10 @@ export const AddRoomModal = ({
                 required
                 value={formData.roomNumber}
                 onChange={(e) =>
-                  setFormData({ ...formData, roomNumber: e.target.value.toUpperCase() })
+                  setFormData({
+                    ...formData,
+                    roomNumber: e.target.value.toUpperCase(),
+                  })
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="e.g., A101"
@@ -240,7 +248,10 @@ export const AddRoomModal = ({
                   type="checkbox"
                   checked={formData.hasWhiteboard}
                   onChange={(e) =>
-                    setFormData({ ...formData, hasWhiteboard: e.target.checked })
+                    setFormData({
+                      ...formData,
+                      hasWhiteboard: e.target.checked,
+                    })
                   }
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -323,7 +334,9 @@ export const AddRoomModal = ({
                 type="text"
                 value={facilityInput}
                 onChange={(e) => setFacilityInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addFacility())}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addFacility())
+                }
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="e.g., Smart Board"
               />
@@ -408,7 +421,9 @@ export const EditRoomModal = ({
   onSubmit,
   room,
 }: EditRoomModalProps) => {
-  const [formData, setFormData] = useState<UpdateRoomData & { facilities: string[] }>({
+  const [formData, setFormData] = useState<
+    UpdateRoomData & { facilities: string[] }
+  >({
     facilities: [],
   });
   const [facilityInput, setFacilityInput] = useState("");
@@ -450,7 +465,11 @@ export const EditRoomModal = ({
   };
 
   const addFacility = () => {
-    if (facilityInput.trim() && formData.facilities && !formData.facilities.includes(facilityInput.trim())) {
+    if (
+      facilityInput.trim() &&
+      formData.facilities &&
+      !formData.facilities.includes(facilityInput.trim())
+    ) {
       setFormData({
         ...formData,
         facilities: [...(formData.facilities || []), facilityInput.trim()],
@@ -495,7 +514,10 @@ export const EditRoomModal = ({
                 required
                 value={formData.roomNumber || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, roomNumber: e.target.value.toUpperCase() })
+                  setFormData({
+                    ...formData,
+                    roomNumber: e.target.value.toUpperCase(),
+                  })
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
@@ -614,7 +636,10 @@ export const EditRoomModal = ({
                   type="checkbox"
                   checked={formData.hasWhiteboard || false}
                   onChange={(e) =>
-                    setFormData({ ...formData, hasWhiteboard: e.target.checked })
+                    setFormData({
+                      ...formData,
+                      hasWhiteboard: e.target.checked,
+                    })
                   }
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -711,7 +736,9 @@ export const EditRoomModal = ({
                 type="text"
                 value={facilityInput}
                 onChange={(e) => setFacilityInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addFacility())}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addFacility())
+                }
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Add facility"
               />

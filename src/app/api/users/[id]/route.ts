@@ -1,21 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import connectDB from '@/lib/db';
-import User from '@/models/User';
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import connectDB from "@/lib/db";
+import User from "@/models/User";
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }
 
   const token = authHeader.substring(7);
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key') as any;
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "fallback-secret-key",
+    ) as any;
     const user = await User.findById(decoded.userId);
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== "admin") {
       return null;
     }
     return user;
@@ -25,7 +28,10 @@ async function verifyAdminToken(request: NextRequest) {
 }
 
 // GET - Get user by ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   try {
     await connectDB();
 
@@ -33,32 +39,31 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const admin = await verifyAdminToken(request);
     if (!admin) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
-        { status: 401 }
+        { error: "Unauthorized. Admin access required." },
+        { status: 401 },
       );
     }
 
-    const user = await User.findById(params.id).select('-password');
+    const user = await User.findById(params.id).select("-password");
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ user }, { status: 200 });
-
   } catch (error: any) {
-    console.error('Get user error:', error);
+    console.error("Get user error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
 
 // PUT - Update user
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   try {
     await connectDB();
 
@@ -66,8 +71,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const admin = await verifyAdminToken(request);
     if (!admin) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
-        { status: 401 }
+        { error: "Unauthorized. Admin access required." },
+        { status: 401 },
       );
     }
 
@@ -76,43 +81,44 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Find existing user
     const existingUser = await User.findById(params.id);
     if (!existingUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Prevent updating admin users
-    if (existingUser.role === 'admin') {
+    if (existingUser.role === "admin") {
       return NextResponse.json(
-        { error: 'Cannot modify admin users' },
-        { status: 403 }
+        { error: "Cannot modify admin users" },
+        { status: 403 },
       );
     }
 
     // Check if email is being changed and if it already exists
     if (userData.email && userData.email !== existingUser.email) {
-      const emailExists = await User.findOne({ 
+      const emailExists = await User.findOne({
         email: userData.email.toLowerCase().trim(),
-        _id: { $ne: params.id }
+        _id: { $ne: params.id },
       });
       if (emailExists) {
         return NextResponse.json(
-          { error: 'Email already exists' },
-          { status: 400 }
+          { error: "Email already exists" },
+          { status: 400 },
         );
       }
     }
 
     // Prepare update data
     const updateData: any = {};
-    
+
     if (userData.name) updateData.name = userData.name.trim();
     if (userData.email) updateData.email = userData.email.toLowerCase().trim();
-    if (userData.department !== undefined) updateData.department = userData.department?.trim();
-    if (userData.isVerified !== undefined) updateData.isVerified = userData.isVerified;
-    if (userData.studentId && existingUser.role === 'student') updateData.studentId = userData.studentId.trim();
-    if (userData.employeeId && existingUser.role === 'teacher') updateData.employeeId = userData.employeeId.trim();
+    if (userData.department !== undefined)
+      updateData.department = userData.department?.trim();
+    if (userData.isVerified !== undefined)
+      updateData.isVerified = userData.isVerified;
+    if (userData.studentId && existingUser.role === "student")
+      updateData.studentId = userData.studentId.trim();
+    if (userData.employeeId && existingUser.role === "teacher")
+      updateData.employeeId = userData.employeeId.trim();
 
     // Handle password update
     if (userData.password) {
@@ -121,25 +127,32 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Update user
-    const updatedUser = await User.findByIdAndUpdate(
-      params.id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-password');
+    const updatedUser = await User.findByIdAndUpdate(params.id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
 
-    return NextResponse.json({
-      message: 'User updated successfully',
-      user: updatedUser
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        message: "User updated successfully",
+        user: updatedUser,
+      },
+      { status: 200 },
+    );
   } catch (error: any) {
-    console.error('Update user error:', error);
-    
-    if (error.name === 'ValidationError') {
-      const validationErrors = error.errors as Record<string, { message?: string }>;
+    console.error("Update user error:", error);
+
+    if (error.name === "ValidationError") {
+      const validationErrors = error.errors as Record<
+        string,
+        { message?: string }
+      >;
       return NextResponse.json(
-        { error: Object.values(validationErrors)[0]?.message || 'Validation error' },
-        { status: 400 }
+        {
+          error:
+            Object.values(validationErrors)[0]?.message || "Validation error",
+        },
+        { status: 400 },
       );
     }
 
@@ -147,19 +160,22 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       const field = Object.keys(error.keyValue)[0];
       return NextResponse.json(
         { error: `${field} already exists` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
 
 // DELETE - Delete user
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   try {
     await connectDB();
 
@@ -167,33 +183,30 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const admin = await verifyAdminToken(request);
     if (!admin) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
-        { status: 401 }
+        { error: "Unauthorized. Admin access required." },
+        { status: 401 },
       );
     }
 
     // Find user
     const user = await User.findById(params.id);
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Prevent deleting admin users
-    if (user.role === 'admin') {
+    if (user.role === "admin") {
       return NextResponse.json(
-        { error: 'Cannot delete admin users' },
-        { status: 403 }
+        { error: "Cannot delete admin users" },
+        { status: 403 },
       );
     }
 
     // Prevent deleting self
     if (user._id.toString() === admin._id.toString()) {
       return NextResponse.json(
-        { error: 'Cannot delete yourself' },
-        { status: 403 }
+        { error: "Cannot delete yourself" },
+        { status: 403 },
       );
     }
 
@@ -205,15 +218,17 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     await User.findByIdAndDelete(params.id);
 
-    return NextResponse.json({
-      message: 'User deleted successfully'
-    }, { status: 200 });
-
-  } catch (error: any) {
-    console.error('Delete user error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        message: "User deleted successfully",
+      },
+      { status: 200 },
+    );
+  } catch (error: any) {
+    console.error("Delete user error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

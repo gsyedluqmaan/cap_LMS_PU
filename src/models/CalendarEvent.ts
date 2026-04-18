@@ -1,9 +1,9 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICalendarEvent extends Document {
   title: string;
   description?: string;
-  eventType: 'exam' | 'holiday' | 'assignment' | 'class' | 'meeting' | 'other';
+  eventType: "exam" | "holiday" | "assignment" | "class" | "meeting" | "other";
   startDate: Date;
   endDate?: Date;
   isAllDay: boolean;
@@ -11,14 +11,14 @@ export interface ICalendarEvent extends Document {
   color?: string;
   isRecurring: boolean;
   recurringPattern?: {
-    frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    frequency: "daily" | "weekly" | "monthly" | "yearly";
     interval: number;
     endDate?: Date;
   };
   participants: mongoose.Types.ObjectId[];
-  targetAudience: 'all' | 'students' | 'teachers' | 'specific';
+  targetAudience: "all" | "students" | "teachers" | "specific";
   specificClasses?: mongoose.Types.ObjectId[];
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   isActive: boolean;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -29,31 +29,31 @@ const CalendarEventSchema = new Schema<ICalendarEvent>(
   {
     title: {
       type: String,
-      required: [true, 'Event title is required'],
+      required: [true, "Event title is required"],
       trim: true,
-      maxlength: [200, 'Title cannot exceed 200 characters'],
+      maxlength: [200, "Title cannot exceed 200 characters"],
     },
     description: {
       type: String,
       trim: true,
-      maxlength: [1000, 'Description cannot exceed 1000 characters'],
+      maxlength: [1000, "Description cannot exceed 1000 characters"],
     },
     eventType: {
       type: String,
-      enum: ['exam', 'holiday', 'assignment', 'class', 'meeting', 'other'],
-      default: 'other',
+      enum: ["exam", "holiday", "assignment", "class", "meeting", "other"],
+      default: "other",
     },
     startDate: {
       type: Date,
-      required: [true, 'Start date is required'],
+      required: [true, "Start date is required"],
     },
     endDate: {
       type: Date,
       validate: {
-        validator: function(this: ICalendarEvent, endDate: Date) {
+        validator: function (this: ICalendarEvent, endDate: Date) {
           return !endDate || endDate >= this.startDate;
         },
-        message: 'End date must be after or equal to start date',
+        message: "End date must be after or equal to start date",
       },
     },
     isAllDay: {
@@ -63,12 +63,12 @@ const CalendarEventSchema = new Schema<ICalendarEvent>(
     location: {
       type: String,
       trim: true,
-      maxlength: [100, 'Location cannot exceed 100 characters'],
+      maxlength: [100, "Location cannot exceed 100 characters"],
     },
     color: {
       type: String,
       match: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
-      default: '#3b82f6',
+      default: "#3b82f6",
     },
     isRecurring: {
       type: Boolean,
@@ -77,7 +77,7 @@ const CalendarEventSchema = new Schema<ICalendarEvent>(
     recurringPattern: {
       frequency: {
         type: String,
-        enum: ['daily', 'weekly', 'monthly', 'yearly'],
+        enum: ["daily", "weekly", "monthly", "yearly"],
       },
       interval: {
         type: Number,
@@ -86,23 +86,27 @@ const CalendarEventSchema = new Schema<ICalendarEvent>(
       },
       endDate: Date,
     },
-    participants: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    }],
+    participants: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     targetAudience: {
       type: String,
-      enum: ['all', 'students', 'teachers', 'specific'],
-      default: 'all',
+      enum: ["all", "students", "teachers", "specific"],
+      default: "all",
     },
-    specificClasses: [{
-      type: Schema.Types.ObjectId,
-      ref: 'ClassSection',
-    }],
+    specificClasses: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "ClassSection",
+      },
+    ],
     priority: {
       type: String,
-      enum: ['low', 'medium', 'high'],
-      default: 'medium',
+      enum: ["low", "medium", "high"],
+      default: "medium",
     },
     isActive: {
       type: Boolean,
@@ -110,13 +114,13 @@ const CalendarEventSchema = new Schema<ICalendarEvent>(
     },
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'Created by is required'],
+      ref: "User",
+      required: [true, "Created by is required"],
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Create indexes
@@ -128,25 +132,35 @@ CalendarEventSchema.index({ createdBy: 1 });
 CalendarEventSchema.index({ participants: 1 });
 
 // Validate recurring pattern
-CalendarEventSchema.pre('save', function(this: ICalendarEvent, next) {
+CalendarEventSchema.pre("save", function (this: ICalendarEvent, next) {
   if (this.isRecurring && !this.recurringPattern) {
-    throw new Error('Recurring pattern is required for recurring events');
+    throw new Error("Recurring pattern is required for recurring events");
   }
-  
-  if (this.isRecurring && this.recurringPattern?.endDate && this.recurringPattern.endDate <= this.startDate) {
-    throw new Error('Recurring end date must be after event start date');
+
+  if (
+    this.isRecurring &&
+    this.recurringPattern?.endDate &&
+    this.recurringPattern.endDate <= this.startDate
+  ) {
+    throw new Error("Recurring end date must be after event start date");
   }
-  
+
   next();
 });
 
 // Validate target audience and specific classes
-CalendarEventSchema.pre('save', function(this: ICalendarEvent, next) {
-  if (this.targetAudience === 'specific' && (!this.specificClasses || this.specificClasses.length === 0)) {
-    throw new Error('Specific classes must be selected when target audience is "specific"');
+CalendarEventSchema.pre("save", function (this: ICalendarEvent, next) {
+  if (
+    this.targetAudience === "specific" &&
+    (!this.specificClasses || this.specificClasses.length === 0)
+  ) {
+    throw new Error(
+      'Specific classes must be selected when target audience is "specific"',
+    );
   }
-  
+
   next();
 });
 
-export default mongoose.models.CalendarEvent || mongoose.model<ICalendarEvent>('CalendarEvent', CalendarEventSchema);
+export default mongoose.models.CalendarEvent ||
+  mongoose.model<ICalendarEvent>("CalendarEvent", CalendarEventSchema);

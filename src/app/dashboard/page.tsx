@@ -37,20 +37,20 @@ export default function DashboardPage() {
 
   const fetchUserData = async () => {
     try {
-      if (user?.role === 'student' || user?.role === 'teacher') {
+      if (user?.role === "student" || user?.role === "teacher") {
         const classes = await classSectionService.getUserClassSections(
           user._id,
-          user.role as 'student' | 'teacher'
+          user.role as "student" | "teacher",
         );
         setUserClasses(classes.slice(0, 3)); // Show only first 3 classes
-        setStats(prev => ({
+        setStats((prev) => ({
           ...prev,
           totalClasses: classes.length,
           upcomingClasses: classes.filter((c: any) => c.isActive).length,
         }));
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error("Error fetching user data:", error);
     }
   };
 
@@ -76,13 +76,13 @@ export default function DashboardPage() {
           {user.role === "student"
             ? "Ready to continue your learning journey?"
             : user.role === "admin"
-            ? "Manage your institution efficiently."
-            : "Ready to inspire and educate today?"}
+              ? "Manage your institution efficiently."
+              : "Ready to inspire and educate today?"}
         </p>
       </div>
 
       {/* Dynamic User Content */}
-      {(user.role === 'student' || user.role === 'teacher') && (
+      {(user.role === "student" || user.role === "teacher") && (
         <div className="mb-8">
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -90,7 +90,9 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {user.role === 'student' ? 'Enrolled Classes' : 'Teaching Classes'}
+                    {user.role === "student"
+                      ? "Enrolled Classes"
+                      : "Teaching Classes"}
                   </p>
                   <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                     {stats.totalClasses}
@@ -118,13 +120,13 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {user.role === 'student' ? 'Upcoming Sessions' : 'Students'}
+                    {user.role === "student" ? "Upcoming Sessions" : "Students"}
                   </p>
                   <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {user.role === 'student' ? '3' : '45'}
+                    {user.role === "student" ? "3" : "45"}
                   </p>
                 </div>
-                {user.role === 'student' ? (
+                {user.role === "student" ? (
                   <Clock className="h-8 w-8 text-purple-600" />
                 ) : (
                   <Users className="h-8 w-8 text-purple-600" />
@@ -139,7 +141,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-blue-600" />
-                  {user.role === 'student' ? 'My Classes' : 'Teaching Schedule'}
+                  {user.role === "student" ? "My Classes" : "Teaching Schedule"}
                 </h3>
                 <Link
                   href="/dashboard/online-classes"
@@ -159,12 +161,14 @@ export default function DashboardPage() {
                       <h4 className="font-medium text-gray-900 dark:text-white text-sm">
                         {classItem.className}
                       </h4>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        classItem.isActive 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
-                        {classItem.isActive ? 'Active' : 'Inactive'}
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          classItem.isActive
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        }`}
+                      >
+                        {classItem.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
@@ -172,7 +176,8 @@ export default function DashboardPage() {
                     </p>
                     <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                       <Users className="h-3 w-3 mr-1" />
-                      {classItem.currentEnrollment}/{classItem.maxStudents} students
+                      {classItem.currentEnrollment}/{classItem.maxStudents}{" "}
+                      students
                     </div>
                   </Link>
                 ))}
@@ -197,7 +202,9 @@ export default function DashboardPage() {
                     Online Classes
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {user.role === 'student' ? 'Join classes' : 'Manage classes'}
+                    {user.role === "student"
+                      ? "Join classes"
+                      : "Manage classes"}
                   </p>
                 </div>
               </Link>
@@ -217,7 +224,7 @@ export default function DashboardPage() {
                 </div>
               </Link>
 
-              {user.role === 'teacher' && (
+              {user.role === "teacher" && (
                 <Link
                   href="/dashboard/classes/create"
                   className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors group"
