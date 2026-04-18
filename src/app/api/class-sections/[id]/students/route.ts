@@ -64,7 +64,7 @@ export async function POST(
     }
 
     // Check for duplicates and capacity
-    const newStudents = studentIds.filter(id => !classSection.students.includes(id));
+    const newStudents = studentIds.filter((id: string) => !classSection.students.includes(id));
     const totalAfterAdding = classSection.students.length + newStudents.length;
 
     if (totalAfterAdding > classSection.maxStudents) {
@@ -79,7 +79,7 @@ export async function POST(
     await classSection.save();
 
     const updatedClass = await ClassSection.findById(params.id)
-      .populate('teachers', 'name email employeeId')
+      .populate('subjects.teacher', 'name email employeeId')
       .populate('students', 'name email studentId')
       .populate('createdBy', 'name email');
 
@@ -128,7 +128,7 @@ export async function DELETE(
     await classSection.save();
 
     const updatedClass = await ClassSection.findById(params.id)
-      .populate('teachers', 'name email employeeId')
+      .populate('subjects.teacher', 'name email employeeId')
       .populate('students', 'name email studentId')
       .populate('createdBy', 'name email');
 

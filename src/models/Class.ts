@@ -51,7 +51,7 @@ export interface IOnlineClass extends Document {
   updatedAt: Date;
 }
 
-const OnlineClassSchema: Schema = new Schema(
+const OnlineClassSchema = new Schema<IOnlineClass>(
   {
     name: {
       type: String,
@@ -229,7 +229,7 @@ OnlineClassSchema.index({ isLive: 1 });
 OnlineClassSchema.index({ classType: 1 });
 
 // Generate unique class code
-OnlineClassSchema.pre('save', async function(next) {
+OnlineClassSchema.pre('save', async function(this: IOnlineClass, next) {
   if (this.isNew && !this.classCode) {
     const count = await mongoose.model('OnlineClass').countDocuments();
     this.classCode = `CLS${(count + 1).toString().padStart(4, '0')}`;
@@ -238,7 +238,7 @@ OnlineClassSchema.pre('save', async function(next) {
 });
 
 // Validate teacher role
-OnlineClassSchema.pre('save', async function(next) {
+OnlineClassSchema.pre('save', async function(this: IOnlineClass, next) {
   if (this.isModified('teacher')) {
     const User = mongoose.model('User');
     const teacher = await User.findById(this.teacher);
@@ -250,7 +250,7 @@ OnlineClassSchema.pre('save', async function(next) {
 });
 
 // Validate students roles and update current enrollment
-OnlineClassSchema.pre('save', async function(next) {
+OnlineClassSchema.pre('save', async function(this: IOnlineClass, next) {
   if (this.isModified('students')) {
     const User = mongoose.model('User');
     const students = await User.find({ _id: { $in: this.students } });
@@ -263,7 +263,7 @@ OnlineClassSchema.pre('save', async function(next) {
     this.currentEnrollment = this.students.length;
     
     // Check enrollment limit
-    if (this.currentEnrollment > this.maxStudents) {
+    if (this.currentEnrollment > (this.maxStudents ?? 0)) {
       throw new Error(`Enrollment cannot exceed maximum of ${this.maxStudents} students`);
     }
   }
@@ -271,7 +271,7 @@ OnlineClassSchema.pre('save', async function(next) {
 });
 
 // Validate schedule times
-OnlineClassSchema.pre('save', function(next) {
+OnlineClassSchema.pre('save', function(this: IOnlineClass, next) {
   if (this.schedule && this.schedule.startTime && this.schedule.endTime) {
     const start = new Date(`2000-01-01T${this.schedule.startTime}:00`);
     const end = new Date(`2000-01-01T${this.schedule.endTime}:00`);

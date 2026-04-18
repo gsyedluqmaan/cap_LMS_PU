@@ -70,7 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Check if adding students would exceed maxStudents
-    const newStudentIds = studentIds.filter(id => !classDoc.students.includes(id));
+    const newStudentIds = studentIds.filter((id: string) => !classDoc.students.includes(id));
     const newTotalStudents = classDoc.students.length + newStudentIds.length;
 
     if (newTotalStudents > classDoc.maxStudents) {
@@ -81,7 +81,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Add students to class (avoid duplicates)
-    classDoc.students = [...new Set([...classDoc.students, ...studentIds])];
+    classDoc.students = [...classDoc.students.map((studentId: any) => studentId.toString()), ...studentIds]
+      .filter((studentId, index, array) => array.indexOf(studentId) === index) as any;
     await classDoc.save();
 
     // Populate and return updated class
@@ -139,7 +140,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Remove students from class
     classDoc.students = classDoc.students.filter(
-      studentId => !studentIds.includes(studentId.toString())
+      (studentId: any) => !studentIds.includes(studentId.toString())
     );
     await classDoc.save();
 

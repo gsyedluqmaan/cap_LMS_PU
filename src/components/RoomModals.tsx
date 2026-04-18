@@ -15,7 +15,7 @@ export const AddRoomModal = ({
   onClose,
   onSubmit,
 }: AddRoomModalProps) => {
-  const [formData, setFormData] = useState<CreateRoomData>({
+  const [formData, setFormData] = useState<CreateRoomData & { facilities: string[] }>({
     roomNumber: "",
     roomName: "",
     roomType: "classroom",
@@ -408,7 +408,9 @@ export const EditRoomModal = ({
   onSubmit,
   room,
 }: EditRoomModalProps) => {
-  const [formData, setFormData] = useState<UpdateRoomData>({});
+  const [formData, setFormData] = useState<UpdateRoomData & { facilities: string[] }>({
+    facilities: [],
+  });
   const [facilityInput, setFacilityInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 

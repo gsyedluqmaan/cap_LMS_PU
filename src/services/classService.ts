@@ -236,6 +236,17 @@ export interface ClassSection {
   className: string;
   classCode: string;
   description?: string;
+  subject?: string;
+  teachers?: Array<
+    | string
+    | {
+        _id: string;
+        name?: string;
+        email?: string;
+        employeeId?: string;
+        department?: string;
+      }
+  >;
   subjects: SubjectTeacher[];
   department: string;
   semester?: string;
@@ -262,7 +273,9 @@ export interface CreateClassSectionData {
   className: string;
   classCode?: string;
   description?: string;
-  subjects: SubjectTeacher[];
+  subject?: string;
+  teachers?: string[];
+  subjects?: SubjectTeacher[];
   department: string;
   semester?: string;
   academicYear: string;
@@ -306,34 +319,69 @@ export interface PaginatedClassSectionResponse {
 }
 
 class ClassSectionService {
+  private normalizeClassSection(classSection: any): ClassSection {
+    const subjects = Array.isArray(classSection?.subjects) ? classSection.subjects : [];
+    const teachers =
+      Array.isArray(classSection?.teachers) && classSection.teachers.length > 0
+        ? classSection.teachers
+        : subjects.map((subject: SubjectTeacher) => subject.teacher);
+
+    return {
+      ...classSection,
+      subject: classSection?.subject ?? subjects[0]?.subject,
+      teachers,
+      subjects,
+    };
+  }
+
   // Get all class sections with filtering and pagination
   async getClassSections(params?: ClassSectionQueryParams): Promise<PaginatedClassSectionResponse> {
     const response = await api.get('/class-sections', { params });
-    return response.data;
+    return {
+      ...response.data,
+      data: Array.isArray(response.data?.data)
+        ? response.data.data.map((classSection: any) => this.normalizeClassSection(classSection))
+        : [],
+    };
   }
 
   // Get class sections for a specific user (student or teacher)
   async getUserClassSections(userId: string, role: 'student' | 'teacher'): Promise<ClassSection[]> {
     const response = await api.get(`/class-sections/user/${userId}?role=${role}`);
-    return response.data;
+    return Array.isArray(response.data)
+      ? response.data.map((classSection: any) => this.normalizeClassSection(classSection))
+      : [];
   }
 
   // Get a single class section by ID
   async getClassSectionById(id: string): Promise<ClassSection> {
     const response = await api.get(`/class-sections/${id}`);
-    return response.data;
+    return this.normalizeClassSection(response.data);
   }
 
   // Create a new class section
   async createClassSection(classData: CreateClassSectionData): Promise<ClassSection> {
-    const response = await api.post('/class-sections', classData);
-    return response.data;
+    const subjects =
+      classData.subjects && classData.subjects.length > 0
+        ? classData.subjects
+        : classData.teachers?.map((teacherId) => ({
+            subject: classData.subject || classData.className,
+            teacher: teacherId,
+            hoursPerWeek: 1,
+            sessionType: 'theory' as const,
+          })) || [];
+
+    const response = await api.post('/class-sections', {
+      ...classData,
+      subjects,
+    });
+    return this.normalizeClassSection(response.data);
   }
 
   // Update an existing class section
   async updateClassSection(id: string, classData: UpdateClassSectionData): Promise<ClassSection> {
     const response = await api.put(`/class-sections/${id}`, classData);
-    return response.data;
+    return this.normalizeClassSection(response.data);
   }
 
   // Delete a class section
@@ -344,25 +392,25 @@ class ClassSectionService {
   // Add students to a class section
   async addStudentsToClassSection(id: string, studentIds: string[]): Promise<ClassSection> {
     const response = await api.post(`/class-sections/${id}/students`, { studentIds });
-    return response.data;
+    return this.normalizeClassSection(response.data);
   }
 
   // Remove students from a class section
   async removeStudentsFromClassSection(id: string, studentIds: string[]): Promise<ClassSection> {
     const response = await api.delete(`/class-sections/${id}/students`, { data: { studentIds } });
-    return response.data;
+    return this.normalizeClassSection(response.data);
   }
 
   // Add teachers to a class section
   async addTeachersToClassSection(id: string, teacherIds: string[]): Promise<ClassSection> {
     const response = await api.post(`/class-sections/${id}/teachers`, { teacherIds });
-    return response.data;
+    return this.normalizeClassSection(response.data);
   }
 
   // Remove teachers from a class section
   async removeTeachersFromClassSection(id: string, teacherIds: string[]): Promise<ClassSection> {
     const response = await api.delete(`/class-sections/${id}/teachers`, { data: { teacherIds } });
-    return response.data;
+    return this.normalizeClassSection(response.data);
   }
 }
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { classSectionService } from "@/services/classService";
+import type { ClassSection } from "@/services/classService";
 import {
   BookOpen,
   Calendar,
@@ -19,8 +20,8 @@ import {
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
-  const [userClasses, setUserClasses] = useState([]);
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [userClasses, setUserClasses] = useState<ClassSection[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<unknown[]>([]);
   const [stats, setStats] = useState({
     totalClasses: 0,
     upcomingClasses: 0,

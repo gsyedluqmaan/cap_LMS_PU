@@ -27,7 +27,7 @@ export function CreateClassModal({ isOpen, onClose, onSubmit, teachers, rooms }:
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const [formData, setFormData] = useState<CreateClassSectionData>({
+  const [formData, setFormData] = useState<CreateClassSectionData & { subjects: SubjectTeacher[] }>({
     className: '',
     classCode: '',
     description: '',
@@ -433,7 +433,7 @@ export function EditClassModal({ isOpen, onClose, onSubmit, classData, teachers,
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const [formData, setFormData] = useState<Partial<CreateClassSectionData>>({
+  const [formData, setFormData] = useState<Partial<CreateClassSectionData> & { subjects: SubjectTeacher[] }>({
     className: classData.className,
     description: classData.description,
     subjects: classData.subjects,

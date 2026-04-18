@@ -136,8 +136,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     console.error('Update user error:', error);
     
     if (error.name === 'ValidationError') {
+      const validationErrors = error.errors as Record<string, { message?: string }>;
       return NextResponse.json(
-        { error: Object.values(error.errors)[0]?.message || 'Validation error' },
+        { error: Object.values(validationErrors)[0]?.message || 'Validation error' },
         { status: 400 }
       );
     }

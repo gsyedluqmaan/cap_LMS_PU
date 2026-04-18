@@ -92,7 +92,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user object
-    const newUserData = {
+    const newUserData: {
+      name: string;
+      email: string;
+      password: string;
+      role: 'student' | 'teacher';
+      university: string;
+      department?: string;
+      isVerified: boolean;
+      studentId?: string;
+      employeeId?: string;
+    } = {
       name: userData.name.trim(),
       email: userData.email.toLowerCase().trim(),
       password: hashedPassword,
@@ -137,8 +147,9 @@ export async function POST(request: NextRequest) {
     console.error('Create user error:', error);
     
     if (error.name === 'ValidationError') {
+      const validationErrors = error.errors as Record<string, { message?: string }>;
       return NextResponse.json(
-        { error: Object.values(error.errors)[0]?.message || 'Validation error' },
+        { error: Object.values(validationErrors)[0]?.message || 'Validation error' },
         { status: 400 }
       );
     }

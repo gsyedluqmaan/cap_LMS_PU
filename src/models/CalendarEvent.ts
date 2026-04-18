@@ -25,7 +25,7 @@ export interface ICalendarEvent extends Document {
   updatedAt: Date;
 }
 
-const CalendarEventSchema: Schema = new Schema(
+const CalendarEventSchema = new Schema<ICalendarEvent>(
   {
     title: {
       type: String,
@@ -128,7 +128,7 @@ CalendarEventSchema.index({ createdBy: 1 });
 CalendarEventSchema.index({ participants: 1 });
 
 // Validate recurring pattern
-CalendarEventSchema.pre('save', function(next) {
+CalendarEventSchema.pre('save', function(this: ICalendarEvent, next) {
   if (this.isRecurring && !this.recurringPattern) {
     throw new Error('Recurring pattern is required for recurring events');
   }
@@ -141,7 +141,7 @@ CalendarEventSchema.pre('save', function(next) {
 });
 
 // Validate target audience and specific classes
-CalendarEventSchema.pre('save', function(next) {
+CalendarEventSchema.pre('save', function(this: ICalendarEvent, next) {
   if (this.targetAudience === 'specific' && (!this.specificClasses || this.specificClasses.length === 0)) {
     throw new Error('Specific classes must be selected when target audience is "specific"');
   }

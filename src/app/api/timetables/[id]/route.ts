@@ -136,11 +136,11 @@ export async function PUT(
 
         // Check teacher conflict (excluding current timetable)
         const teacherConflict = await Timetable.checkTeacherConflict(
-          slot.teacher,
+          new mongoose.Types.ObjectId(slot.teacher),
           slot.day,
           slot.startTime,
           slot.endTime,
-          id
+          new mongoose.Types.ObjectId(id)
         );
 
         if (teacherConflict.conflict) {
@@ -152,11 +152,11 @@ export async function PUT(
 
         // Check room conflict (excluding current timetable)
         const roomConflict = await Timetable.checkRoomConflict(
-          slot.room,
+          new mongoose.Types.ObjectId(slot.room),
           slot.day,
           slot.startTime,
           slot.endTime,
-          id
+          new mongoose.Types.ObjectId(id)
         );
 
         if (roomConflict.conflict) {

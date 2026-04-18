@@ -25,6 +25,23 @@ export interface ITimetable extends Document {
   updatedAt: Date;
 }
 
+export interface ITimetableModel extends mongoose.Model<ITimetable> {
+  checkTeacherConflict(
+    teacherId: mongoose.Types.ObjectId,
+    day: string,
+    startTime: string,
+    endTime: string,
+    excludeTimetableId?: mongoose.Types.ObjectId
+  ): Promise<{ conflict: boolean; message?: string }>;
+  checkRoomConflict(
+    roomId: mongoose.Types.ObjectId,
+    day: string,
+    startTime: string,
+    endTime: string,
+    excludeTimetableId?: mongoose.Types.ObjectId
+  ): Promise<{ conflict: boolean; message?: string }>;
+}
+
 const TimetableSlotSchema = new Schema({
   day: {
     type: String,
@@ -64,7 +81,7 @@ const TimetableSlotSchema = new Schema({
   },
 }, { _id: false });
 
-const TimetableSchema: Schema = new Schema(
+const TimetableSchema = new Schema<ITimetable, ITimetableModel>(
   {
     classSection: {
       type: Schema.Types.ObjectId,
@@ -123,7 +140,7 @@ TimetableSchema.index({ 'slots.room': 1, isActive: 1 });
 TimetableSchema.index({ 'slots.day': 1, 'slots.startTime': 1 });
 
 // Validate that end time is after start time for each slot
-TimetableSchema.pre('save', function(next) {
+TimetableSchema.pre('save', function(this: ITimetable, next) {
   for (const slot of this.slots) {
     const start = new Date(`2000-01-01T${slot.startTime}:00`);
     const end = new Date(`2000-01-01T${slot.endTime}:00`);
@@ -139,7 +156,7 @@ TimetableSchema.pre('save', function(next) {
 // Note: We allow overlapping time slots because a class may have multiple subjects
 // scheduled at different times across the week. The actual conflict checking
 // (teacher/room availability) is done at the API level during timetable generation.
-TimetableSchema.pre('save', function(next) {
+TimetableSchema.pre('save', function(this: ITimetable, next) {
   // Skip overlap validation - conflicts are checked during generation
   // This allows flexibility in timetable creation
   next();
@@ -230,7 +247,7 @@ TimetableSchema.statics.checkRoomConflict = async function(
 };
 
 // Virtual for formatted timetable
-TimetableSchema.virtual('formattedSlots').get(function() {
+TimetableSchema.virtual('formattedSlots').get(function(this: ITimetable) {
   return this.slots.map((slot: ITimetableSlot) => ({
     ...slot,
     timeRange: `${slot.startTime} - ${slot.endTime}`,
@@ -242,4 +259,4 @@ TimetableSchema.set('toJSON', {
   virtuals: true
 });
 
-export default mongoose.models.Timetable || mongoose.model<ITimetable>('Timetable', TimetableSchema);
+export default (mongoose.models.Timetable as ITimetableModel) || mongoose.model<ITimetable, ITimetableModel>('Timetable', TimetableSchema);
