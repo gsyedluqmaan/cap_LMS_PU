@@ -4,6 +4,9 @@ import connectDB from '@/lib/db';
 import ClassSection from '@/models/ClassSection';
 import User from '@/models/User';
 
+// Import Room model as side effect to ensure it's registered
+import '@/models/Room';
+
 interface DecodedToken {
   userId: string;
   email: string;
@@ -37,16 +40,18 @@ export async function GET(
     await connectDB();
 
     const classSection = await ClassSection.findById(params.id)
-      .populate('teachers', 'name email employeeId')
+      .populate('subjects.teacher', 'name email employeeId')
       .populate('students', 'name email studentId')
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .populate('theoryRoom', 'roomNumber roomName building')
+      .populate('labRoom', 'roomNumber roomName building');
 
     if (!classSection) {
       return NextResponse.json({ error: 'Class section not found' }, { status: 404 });
     }
 
     // Check permissions
-    if (user.role === 'teacher' && !classSection.teachers.some((t: any) => t._id.toString() === user.userId)) {
+    if (user.role === 'teacher' && !classSection.subjects.some((s: any) => s.teacher._id.toString() === user.userId)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -85,7 +90,7 @@ export async function PUT(
     // Check permissions: admin can update any, teacher can update their own classes
     if (user.role === 'admin') {
       // Admin can update any class
-    } else if (user.role === 'teacher' && classSection.teachers.includes(user.userId)) {
+    } else if (user.role === 'teacher' && classSection.subjects.some((s: any) => s.teacher.toString() === user.userId)) {
       // Teacher can update their own classes
     } else {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
@@ -96,21 +101,24 @@ export async function PUT(
 
     // Remove fields that shouldn't be updated by teachers
     if (user.role === 'teacher') {
-      delete updates.teachers;
+      delete updates.subjects;
       delete updates.students;
       delete updates.department;
       delete updates.academicYear;
       delete updates.maxStudents;
       delete updates.createdBy;
+      delete updates.theoryRoom;
+      delete updates.labRoom;
     }
 
-    // Validate students and teachers if being updated
-    if (updates.teachers) {
+    // Validate subjects and teachers if being updated
+    if (updates.subjects && updates.subjects.length > 0) {
+      const teacherIds = updates.subjects.map((s: any) => s.teacher);
       const teacherUsers = await User.find({ 
-        _id: { $in: updates.teachers }, 
+        _id: { $in: teacherIds }, 
         role: 'teacher' 
       });
-      if (teacherUsers.length !== updates.teachers.length) {
+      if (teacherUsers.length !== teacherIds.length) {
         return NextResponse.json(
           { error: 'Some selected teachers are invalid' },
           { status: 400 }
@@ -143,9 +151,11 @@ export async function PUT(
       updates,
       { new: true, runValidators: true }
     )
-    .populate('teachers', 'name email employeeId')
+    .populate('subjects.teacher', 'name email employeeId')
     .populate('students', 'name email studentId')
-    .populate('createdBy', 'name email');
+    .populate('createdBy', 'name email')
+    .populate('theoryRoom', 'roomNumber roomName building')
+    .populate('labRoom', 'roomNumber roomName building');
 
     return NextResponse.json(updatedClass);
   } catch (error: any) {

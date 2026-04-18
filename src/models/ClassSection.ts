@@ -1,17 +1,25 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface ISubjectTeacher {
+  subject: string;
+  teacher: mongoose.Types.ObjectId;
+  hoursPerWeek: number;
+  sessionType: 'theory' | 'lab' | 'practical' | 'tutorial';
+}
+
 export interface IClassSection extends Document {
   className: string;
   classCode: string;
   description?: string;
-  subject?: string;
+  subjects: ISubjectTeacher[];
   department: string;
   semester?: string;
   academicYear: string;
-  teachers: mongoose.Types.ObjectId[];
   students: mongoose.Types.ObjectId[];
   maxStudents: number;
   currentEnrollment: number;
+  theoryRoom?: mongoose.Types.ObjectId;
+  labRoom?: mongoose.Types.ObjectId;
   schedule: {
     days: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday')[];
     startTime: string;
@@ -24,6 +32,31 @@ export interface IClassSection extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+const SubjectTeacherSchema = new Schema({
+  subject: {
+    type: String,
+    required: [true, 'Subject is required'],
+    trim: true,
+  },
+  teacher: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Teacher is required'],
+  },
+  hoursPerWeek: {
+    type: Number,
+    required: [true, 'Hours per week is required'],
+    min: [1, 'Hours per week must be at least 1'],
+    max: [20, 'Hours per week cannot exceed 20'],
+  },
+  sessionType: {
+    type: String,
+    enum: ['theory', 'lab', 'practical', 'tutorial'],
+    default: 'theory',
+    required: [true, 'Session type is required'],
+  },
+}, { _id: false });
 
 const ClassSectionSchema: Schema = new Schema(
   {
@@ -43,10 +76,7 @@ const ClassSectionSchema: Schema = new Schema(
       type: String,
       trim: true,
     },
-    subject: {
-      type: String,
-      trim: true,
-    },
+    subjects: [SubjectTeacherSchema],
     department: {
       type: String,
       required: [true, 'Department is required'],
@@ -61,18 +91,6 @@ const ClassSectionSchema: Schema = new Schema(
       required: [true, 'Academic year is required'],
       trim: true,
     },
-    teachers: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      validate: {
-        validator: async function(teacherId: mongoose.Types.ObjectId) {
-          const User = mongoose.model('User');
-          const teacher = await User.findById(teacherId);
-          return teacher && teacher.role === 'teacher';
-        },
-        message: 'All assigned users must have teacher role'
-      }
-    }],
     students: [{
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -96,6 +114,14 @@ const ClassSectionSchema: Schema = new Schema(
       type: Number,
       default: 0,
       min: 0,
+    },
+    theoryRoom: {
+      type: Schema.Types.ObjectId,
+      ref: 'Room',
+    },
+    labRoom: {
+      type: Schema.Types.ObjectId,
+      ref: 'Room',
     },
     schedule: [{
       days: [{
@@ -142,8 +168,10 @@ const ClassSectionSchema: Schema = new Schema(
 ClassSectionSchema.index({ department: 1 });
 ClassSectionSchema.index({ academicYear: 1 });
 ClassSectionSchema.index({ isActive: 1 });
-ClassSectionSchema.index({ 'teachers': 1 });
+ClassSectionSchema.index({ 'subjects.teacher': 1 });
 ClassSectionSchema.index({ 'students': 1 });
+ClassSectionSchema.index({ theoryRoom: 1 });
+ClassSectionSchema.index({ labRoom: 1 });
 
 // Generate unique class code if not provided
 ClassSectionSchema.pre('save', async function(next) {
@@ -186,10 +214,14 @@ ClassSectionSchema.pre('save', function(next) {
 
 // Virtual for formatted schedule
 ClassSectionSchema.virtual('formattedSchedule').get(function() {
-  return (this as any).schedule.map((item: any) => ({
+  // Check if schedule exists and is an array before mapping
+  if (!this.schedule || !Array.isArray(this.schedule)) {
+    return [];
+  }
+  return this.schedule.map((item: any) => ({
     ...item,
     timeRange: `${item.startTime} - ${item.endTime}`,
-    daysString: item.days.join(', '),
+    daysString: item.days?.join(', ') || '',
     location: item.room && item.building ? `${item.room}, ${item.building}` : item.room || item.building || 'TBA'
   }));
 });
